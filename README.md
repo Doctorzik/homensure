@@ -1,15 +1,10 @@
 # Homensure
-
-> "By all means marry. If you get a good wife, you'll be happy. If you get a bad one, you'll become a philosopher." - Socrates
-
-
-> "Education is a gift to the mind" - Jeremiah 
-
+---
 
 ## Prerequisites
 
 - **Node.js** v18 or newer  
-- **npm** (bundled with Node.js) or **Yarn**
+- **npm** (bundled with Node.js)
 
 ---
 
@@ -23,21 +18,27 @@ git clone https://github.com/<your-org>/homensure.git
 ### 2. Install dependencies
 ```bash
 npm install
-# or
-yarn install
 ```
 
+### 3. Set up Prisma and environment
 
-### 3. (Optional) Initialize Tailwind CSS
+1. Create a `.env` file in the root directory with your Supabase PostgreSQL connection details:
 
-If you haven’t yet generated a `tailwind.config.js`, run:
+```
+DATABASE_URL="postgresql://<user>:<password>@<host>:5432/<db>"
+DIRECT_URL="${DATABASE_URL}"
+AUTH_SECRET="your-random-hex-secret"
+```
 
+2. Generate the Prisma client:
 ```bash
-npm run init:tailwind
-# or
-yarn init:tailwind
+npx prisma generate
 ```
 
+3. Push the schema to your Supabase DB:
+```bash
+npx prisma db push
+```
 
 ---
 
@@ -47,10 +48,8 @@ Start the Next.js dev server with Turbopack:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-Open http://localhost:3000 in your browser.  
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
