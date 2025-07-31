@@ -17,7 +17,7 @@ export default function HomePage() {
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!search) return;
-		router.push(`/properties/?query=${encodeURIComponent(search)}`);
+		router.push(`/properties?query=${encodeURIComponent(search)}`);
 	};
 
 	const topCities = ['New York', 'Los Angeles', 'Chicago', 'Houston'];
@@ -34,7 +34,7 @@ export default function HomePage() {
 				className="relative h-screen bg-cover bg-center"
 				style={{ backgroundImage: "url('/hero.jpg')" }}
 			>
-				<div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center px-6">
+				<div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center px-6">
 					<h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
 						Find Your Next Home. Simple. Secure. Transparent.
 					</h1>
@@ -43,7 +43,7 @@ export default function HomePage() {
 							value={search}
 							onChange={e => setSearch(e.target.value)}
 							placeholder="Search city, neighborhood or ZIP"
-							className="flex-grow px-4 py-2 rounded-l-xl border border-gray-300 focus:outline-none"
+							className="flex-grow px-4 py-2 rounded-l-xl border border-gray-300 placeholder-gray-100 focus:outline-none"
 						/>
 						<button
 							type="submit"
@@ -81,19 +81,20 @@ export default function HomePage() {
 						<Link
 							key={city}
 							href={`/properties?location=${encodeURIComponent(city)}`}
-							className="relative h-40 rounded-xl overflow-hidden shadow-lg group"
+							className="relative h-40 rounded-xl overflow-hidden shadow-lg group block"
 						>
 							<Image
-								src={`/locations/${city.toLowerCase().replace(/ /g, '-')}.jpg`}
-								alt={city}
-								fill
-								className="object-cover transform group-hover:scale-105 transition"
+							src={`/locations/${city.toLowerCase().replace(/ /g, '-')}.jpg`}
+							alt={city}
+							fill
+							className="object-cover transform group-hover:scale-105 transition"
 							/>
-							<div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center">
-								<span className="text-white font-semibold text-lg">{city}</span>
+							<div className="absolute inset-0 bg-black/35 group-hover:bg-black/20 flex items-center justify-center">
+							<span className="text-white font-semibold text-lg">{city}</span>
 							</div>
 						</Link>
 					))}
+
 				</div>
 			</section>
 

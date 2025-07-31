@@ -54,11 +54,11 @@ export function NavBar() {
           <div className="flex justify-center items-center gap-4">
             <Link href={"/userprofile"} className="flex flex-col md:flex-row justify-center items-center p-2 m-0" >
               <User2 />
-              <span>Goto Profile</span>
+              <span>User Profile</span>
             </Link>
             <Button variant={"link"} type="button" onClick={() => signOut({ callbackUrl: "/" })} >
               <LogOutIcon />
-              <span>Login Out</span>
+              <span>Sign Out</span>
             </Button>
 
           </div>
