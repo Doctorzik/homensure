@@ -1,12 +1,4 @@
-import { getAllApplications } from "@/lib/actions/admin-actions"
-
-
-
-export default async function AgentApllications() {
-  
-
-
- await getAllApplications()
+export default function AgentApllications() {
 
   return (
     <div>Agent Applications</div>
