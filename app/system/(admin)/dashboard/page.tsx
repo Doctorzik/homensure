@@ -1,39 +1,8 @@
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db/prisma";
-import { redirect } from "next/navigation";
+import React from "react";
+import UsersTableWrapper from "@/components/UsersTableWrapper";
 
-
-async function approveApplication(id: string) {
-  "use server";
-  // 1. Mark application as approved
-  const application = await prisma.agentApplication.update({
-    where: { id },
-    data: { status: "APPROVED" },
-  });
-
-  // 2. Check if Agent already exists for this user
-  const existingAgent = await prisma.agent.findUnique({
-    where: { userId: application.userId },
-  });
-  if (!existingAgent) {
-    await prisma.agent.create({
-      data: {
-        userId: application.userId,
-        fullName: application.firstName + " " + application.lastName,
-        phone: String(application.phone),
-        dateOfBirth: application.dateOfBirth,
-        gender: application.gender,
-        address: application.address,
-        locality: application.desiredLocality,
-        nationalId: application.nationalIdNumber,
-        idType: application.proofOfIdentityType,
-        idUrl: application.proofOfIdentityUrl,
-        // joinedAt will default to now()
-      },
-    });
-  }
-}
+// ...existing code...
 
 async function rejectApplication(id: string) {
   "use server";
@@ -43,17 +12,42 @@ async function rejectApplication(id: string) {
   });
 }
 
-export default async function AdminDashboard() {
-  const session = await auth();
-  if (!session?.user?.role || session.user.role !== "ADMIN") {
-    redirect("/");
-  }
+async function updateUser(formData: FormData) {
+  "use server";
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const role = formData.get("role") as string;
+  await prisma.user.update({
+    where: { id },
+    data: {
+      name,
+      email,
+      role: role as any, // If you have a Role enum, cast or import it here
+    },
+  });
+}
 
+async function deleteUser(id: string) {
+  "use server";
+  await prisma.user.delete({ where: { id } });
+}
+
+export default async function AdminDashboard() {
   const pendingApps = await prisma.agentApplication.findMany({
     where: { status: "PENDING" },
     include: { user: true },
     orderBy: { appliedAt: "desc" },
   });
+  const usersRaw = await prisma.user.findMany({ orderBy: { name: "asc" } });
+  const users = usersRaw.map(u => ({
+    id: u.id,
+    name: u.name ?? "",
+    email: u.email,
+    role: u.role,
+    createdAt: u.createdAt?.toISOString?.() ?? (typeof u.createdAt === "string" ? u.createdAt : undefined),
+    emailVerified: u.emailVerified,
+  }));
 
   return (
     <main className="w-full max-w-[98vw] mx-auto p-1 md:p-4 space-y-6 mt-4">
@@ -65,23 +59,6 @@ export default async function AdminDashboard() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border text-xs md:text-sm">
-              <colgroup>
-                <col style={{ width: '8%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '7%' }} />
-                <col style={{ width: '7%' }} />
-                <col style={{ width: '5%' }} />
-                <col style={{ width: '8%' }} />
-                <col style={{ width: '7%' }} />
-                <col style={{ width: '10%' }} />
-                <col style={{ width: '6%' }} />
-                <col style={{ width: '7%' }} />
-                <col style={{ width: '6%' }} />
-                <col style={{ width: '10%' }} />
-                <col style={{ width: '8%' }} />
-                <col style={{ width: '10%' }} />
-                <col style={{ width: '8%' }} />
-              </colgroup>
               <thead>
                 <tr className="bg-gray-100">
                   <th className="px-1 py-2 border">Name</th>
@@ -103,7 +80,7 @@ export default async function AdminDashboard() {
               </thead>
               <tbody>
                 {pendingApps.map(app => (
-                  <tr key={app.id}>
+                  <tr key={app.id} className="odd:bg-gray-50">
                     <td className="px-1 py-2 border whitespace-nowrap">{app.firstName} {app.lastName}</td>
                     <td className="px-1 py-2 border whitespace-nowrap">{app.user?.email}</td>
                     <td className="px-1 py-2 border whitespace-nowrap">{app.phone}</td>
@@ -125,14 +102,16 @@ export default async function AdminDashboard() {
                     <td className="px-1 py-2 border whitespace-nowrap">{app.pastRoles ?? "-"}</td>
                     <td className="px-1 py-2 border whitespace-nowrap">{new Date(app.appliedAt).toLocaleString()}</td>
                     <td className="px-1 py-2 border whitespace-nowrap">
-                      <div className="flex flex-col gap-2">
-                        <form action={approveApplication.bind(null, app.id)} method="post">
-                          <button type="submit" className="w-full bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs md:text-sm">Approve</button>
-                        </form>
-                        <form action={rejectApplication.bind(null, app.id)} method="post">
-                          <button type="submit" className="w-full bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs md:text-sm">Reject</button>
-                        </form>
-                      </div>
+                      {app.status === "PENDING" && (
+                        <div className="flex flex-col gap-2">
+                          <form action={approveApplication.bind(null, app.id)} method="post">
+                            <button type="submit" className="w-full bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs md:text-sm">Approve</button>
+                          </form>
+                          <form action={rejectApplication.bind(null, app.id)} method="post">
+                            <button type="submit" className="w-full bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs md:text-sm">Reject</button>
+                          </form>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -141,6 +120,51 @@ export default async function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Users List Section */}
+      <div className="bg-white p-1 md:p-3 rounded-xl shadow space-y-4 mt-8">
+        <h2 className="text-2xl font-bold mb-4">All Users</h2>
+        <div className="overflow-x-auto">
+          <UsersTableWrapper users={users} updateUser={updateUser} deleteUser={deleteUser} />
+        </div>
+      </div>
     </main>
   );
+}
+
+
+import { prisma } from "@/lib/db/prisma";
+
+
+export async function approveApplication(id: string) {
+  "use server";
+  // 1. Mark application as approved
+  const application = await prisma.agentApplication.update({
+    where: { id },
+    data: { status: "APPROVED" },
+  });
+
+  // 2. Update user role to AGENT
+  await prisma.user.update({
+    where: { id: application.userId },
+    data: { role: "AGENT" },
+  });
+
+  // 3. Check if Agent already exists for this user
+  const existingAgent = await prisma.agent.findUnique({
+    where: { userId: application.userId },
+  });
+  if (!existingAgent) {
+    await prisma.agent.create({
+      data: {
+        userId: application.userId,
+        fullName: application.firstName + " " + application.lastName,
+        phone: String(application.phone),
+        dateOfBirth: application.dateOfBirth,
+        gender: application.gender,
+        address: application.address,
+        locality: application.desiredLocality,
+      }
+    });
+  }
 }
