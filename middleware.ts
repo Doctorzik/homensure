@@ -8,12 +8,6 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.AUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    console.log("MIDDLEWARE REQUEST:", {
-        pathname,
-        hasToken: !!token,
-        role: token?.role,
-        url: req.url
-    });
 
     // If no token and needs login, redirect to login
     if (!token && pathname !== "/login") {

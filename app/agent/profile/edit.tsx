@@ -104,6 +104,7 @@ export default function Edit({ user, sessionEmail }: EditProps) {
                   </span>
                 </div>
                 <DisplayItem label="Full Name" value={user.agent.fullName} />
+                <DisplayItem label="Email" value={sessionEmail} />
                 <DisplayItem label="Phone"     value={user.agent.phone} />
                 <DisplayItem
                     label="Date of Birth"

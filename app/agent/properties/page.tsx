@@ -35,12 +35,54 @@ const columns = [
   { key: "published", label: "Published" },
   { key: "listedAt", label: "Listed At" },
   { key: "updatedAt", label: "Updated At" },
+  { key: "actions", label: "Actions" },
 ];
 
 
 export default function AgentPropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<{ id: string; values: Partial<Property> } | null>(null);
+  function handleEdit(property: Property) {
+    setEditing({ id: property.id, values: { ...property } });
+  }
+
+  function handleCancelEdit() {
+    setEditing(null);
+  }
+
+  function handleEditChange(field: keyof Property, value: string | number | boolean) {
+    if (!editing) return;
+    setEditing({ ...editing, values: { ...editing.values, [field]: value } });
+  }
+
+  async function handleSaveEdit() {
+    if (!editing) return;
+    try {
+      const res = await fetch(`/api/properties/${editing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editing.values),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProperties((prev) => prev.map(p => p.id === editing.id ? data.property : p));
+      }
+    } catch {}
+    setEditing(null);
+  }
+
+  async function handleDelete(propertyId: string) {
+    if (!window.confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/properties/${propertyId}`, { method: "DELETE" });
+      if (res.ok || res.status === 204) {
+        setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+      }
+    } catch {}
+  }
 
   useEffect(() => {
     async function fetchProperties() {
@@ -128,7 +170,50 @@ export default function AgentPropertiesPage() {
                   <tr key={property.id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     {columns.map((col) => (
                       <td key={col.key} className="px-4 py-2">
-                        {getPropertyValue(property, col.key)}
+                        {col.key === "actions" ? (
+                          <div className="flex gap-2">
+                            <a
+                              href={`/agent/properties/edit/${property.id}`}
+                              className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 text-center"
+                            >
+                              Edit
+                            </a>
+                            <button
+                              className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                              onClick={() => handleDelete(property.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        ) : col.key === "published" ? (
+                          property.published ? (
+                            <span className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-semibold">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2 py-1 rounded bg-red-100 text-red-800 text-xs font-semibold">
+                              No
+                            </span>
+                          )
+                        ) : col.key === "available" ? (
+                          property.available ? (
+                            <span className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-semibold">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                              No
+                            </span>
+                          )
+                        ) : col.key === "furnished" ? (
+                          property.furnished ? "Yes" : "No"
+                        ) : col.key === "listedAt" ? (
+                          property.listedAt ? new Date(property.listedAt).toLocaleDateString() : ""
+                        ) : col.key === "updatedAt" ? (
+                          property.updatedAt ? new Date(property.updatedAt).toLocaleDateString() : ""
+                        ) : (
+                          property[col.key as keyof Property] as string | number | boolean | null
+                        )}
                       </td>
                     ))}
                   </tr>

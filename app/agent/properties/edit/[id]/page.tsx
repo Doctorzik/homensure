@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 
 const initialState = {
   title: "",
@@ -18,15 +18,19 @@ const initialState = {
   state: "",
   city: "",
   address: "",
-  // images, videos, amenities, tags, latitude, longitude, isFeatured, agentId, reviews handled elsewhere or optional
 };
+
+const propertyTypes = [
+  "APARTMENT",
+  "HOUSE",
+  "STUDIO",
+  "DUPLEX",
+  "COMMERCIAL",
+  "LAND",
+];
+
 // Example data for countries, states, and cities
-type CountryStateCityType = {
-  [country: string]: {
-    [state: string]: string[];
-  };
-};
-const countryStateCity: CountryStateCityType = {
+const countryStateCity = {
   USA: {
     California: ["Los Angeles", "San Francisco", "San Diego"],
     Texas: ["Houston", "Dallas", "Austin"],
@@ -44,25 +48,25 @@ const countryStateCity: CountryStateCityType = {
   },
 };
 
-
-const propertyTypes = [
-  "APARTMENT",
-  "HOUSE",
-  "STUDIO",
-  "DUPLEX",
-  "COMMERCIAL",
-  "LAND",
-];
-
-
-export default function AddPropertyPage() {
+export default function EditPropertyPage() {
+  const router = useRouter();
+  const params = useParams();
+  const { id } = params;
   const [form, setForm] = useState(initialState);
   const [submitting, setSubmitting] = useState(false);
-  const [agentId, setAgentId] = useState<string>("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [agentId, setAgentId] = useState("");
 
-  // Fetch agentId on mount
-  React.useEffect(() => {
+  useEffect(() => {
+    async function fetchProperty() {
+      setLoading(true);
+      const res = await fetch(`/api/properties/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setForm({ ...initialState, ...data.property });
+      }
+      setLoading(false);
+    }
     async function fetchAgentId() {
       const res = await fetch("/api/user/profile");
       if (res.ok) {
@@ -72,14 +76,15 @@ export default function AddPropertyPage() {
         }
       }
     }
+    fetchProperty();
     fetchAgentId();
-  }, []);
+  }, [id]);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+  function handleChange(e) {
     const { name, value, type } = e.target;
     let checked = false;
     if (type === "checkbox") {
-      checked = (e.target as HTMLInputElement).checked;
+      checked = e.target.checked;
     }
     setForm((prev) => {
       if (name === "country") {
@@ -95,31 +100,51 @@ export default function AddPropertyPage() {
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch("/api/properties", {
-        method: "POST",
+      const res = await fetch(`/api/properties/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, agentId }),
       });
       if (res.ok) {
-        router.push("/properties");
+        router.push("/agent/properties");
       } else {
-        // Optionally handle error
         setSubmitting(false);
-        alert("Failed to add property. Please try again.");
+        alert("Failed to update property. Please try again.");
       }
     } catch {
       setSubmitting(false);
-      alert("Failed to add property. Please try again.");
+      alert("Failed to update property. Please try again.");
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/properties/${id}`, { method: "DELETE" });
+      if (res.ok || res.status === 204) {
+        router.push("/agent/properties");
+      } else {
+        setSubmitting(false);
+        alert("Failed to delete property. Please try again.");
+      }
+    } catch {
+      setSubmitting(false);
+      alert("Failed to delete property. Please try again.");
+    }
+  }
+
+  if (loading) return <div className="p-8">Loading...</div>;
+
   return (
     <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow mt-8">
-      <h1 className="text-2xl font-bold mb-6">Add New Property</h1>
+      <h1 className="text-2xl font-bold mb-6">Edit Property</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block font-semibold mb-1">Title</label>
@@ -202,7 +227,7 @@ export default function AddPropertyPage() {
               disabled={!form.country}
             >
               <option value="" disabled>Select State</option>
-              {form.country && Object.keys(countryStateCity[form.country] || {}).map((state: string) => (
+              {form.country && Object.keys(countryStateCity[form.country] || {}).map((state) => (
                 <option key={state} value={state}>{state}</option>
               ))}
             </select>
@@ -218,15 +243,23 @@ export default function AddPropertyPage() {
               disabled={!form.state}
             >
               <option value="" disabled>Select City</option>
-              {form.country && form.state && (countryStateCity[form.country]?.[form.state] || []).map((city: string) => (
+              {form.country && form.state && (countryStateCity[form.country]?.[form.state] || []).map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
             </select>
           </div>
         </div>
-        <button type="submit" disabled={submitting} className="w-full bg-primary text-white py-2 rounded font-semibold hover:bg-primary/90 transition-colors">
-          {submitting ? "Adding..." : "Add Property"}
-        </button>
+        <div className="flex gap-4 mt-6">
+          <button type="submit" disabled={submitting} className="flex-1 bg-primary text-white py-2 rounded font-semibold hover:bg-primary/90 transition-colors">
+            {submitting ? "Saving..." : "Save"}
+          </button>
+          <button type="button" onClick={handleCancelEdit} className="flex-1 bg-gray-400 text-white py-2 rounded font-semibold hover:bg-gray-500 transition-colors" disabled={submitting}>
+            Cancel
+          </button>
+          <button type="button" onClick={handleDelete} className="flex-1 bg-red-600 text-white py-2 rounded font-semibold hover:bg-red-700 transition-colors" disabled={submitting}>
+            Delete
+          </button>
+        </div>
       </form>
     </div>
   );
