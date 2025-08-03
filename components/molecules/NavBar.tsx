@@ -41,7 +41,8 @@ export function NavBar() {
     let profileHref  = appUrls.login.landing;
     let profileLabel = "Login";
     let profileIcon  = <LogInIcon />;
-
+    let showDashboard = false;
+    let dashboardHref = "/system/dashboard";
     if (session?.user) {
         switch (session.user.role) {
             case "USER":
@@ -55,9 +56,11 @@ export function NavBar() {
                 profileIcon  = <User2 />;
                 break;
             case "ADMIN":
-                profileHref  = appUrls.system.adminLanding;
-                profileLabel = "Dashboard";
-                profileIcon  = <SettingsIcon />;
+                profileHref  = "/user/profile";
+                profileLabel = "Profile";
+                profileIcon  = <User2 />;
+                showDashboard = true;
+                dashboardHref = "/system/dashboard";
                 break;
         }
     }
@@ -90,6 +93,15 @@ export function NavBar() {
             <div>
                 {session?.user ? (
                     <div className="flex items-center gap-4">
+                        {showDashboard && (
+                            <Link
+                                href={dashboardHref}
+                                className="flex items-center gap-2 px-3 py-2 rounded bg-primary text-white shadow-xs hover:bg-primary/90 transition-colors"
+                            >
+                                <SettingsIcon />
+                                <span>Dashboard</span>
+                            </Link>
+                        )}
                         <Link
                             href={profileHref}
                             className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded"

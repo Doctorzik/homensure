@@ -32,9 +32,9 @@ export async function middleware(req: NextRequest) {
             return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
 
-        // User routes
+        // User routes (allow USER and ADMIN for /user/profile and /agent/apply)
         if ((pathname.startsWith("/user/profile") || pathname.startsWith("/agent/apply")) 
-            && token.role !== "USER") {
+            && token.role !== "USER" && token.role !== "ADMIN") {
             return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
     }

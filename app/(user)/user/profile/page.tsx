@@ -111,18 +111,20 @@ export default function UserProfilePage() {
                 Edit Profile
             </Button>
 
-            {/* Apply to Become an Agent section in a card */}
-            <div className="bg-white p-8 rounded-2xl shadow space-y-4 mt-8">
-                <h2 className="text-2xl font-semibold mb-2">
-                    Apply to Become an Agent
-                </h2>
-                <Button
-                    onClick={() => router.push("/agent/apply")}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                    Apply
-                </Button>
-            </div>
+            {/* Apply to Become an Agent section in a card (hide for admins) */}
+            {user.role !== "ADMIN" && (
+                <div className="bg-white p-8 rounded-2xl shadow space-y-4 mt-8">
+                    <h2 className="text-2xl font-semibold mb-2">
+                        Apply to Become an Agent
+                    </h2>
+                    <Button
+                        onClick={() => router.push("/agent/apply")}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                        Apply
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
