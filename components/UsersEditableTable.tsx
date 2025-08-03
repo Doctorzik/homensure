@@ -61,7 +61,7 @@ export default function UsersEditableTable({ users, updateUser, deleteUser }: {
                 />
               ) : user.email}
             </td>
-            <td className="px-2 py-2 border whitespace-nowrap">
+            <td className="px-2 py-2 border whitespace-nowrap text-center">
               {editingId === user.id ? (
                 <select
                   className="border rounded px-1 py-0.5"
@@ -72,7 +72,21 @@ export default function UsersEditableTable({ users, updateUser, deleteUser }: {
                   <option value="AGENT">AGENT</option>
                   <option value="ADMIN">ADMIN</option>
                 </select>
-              ) : user.role}
+              ) : (
+                <span
+                  className={
+                    user.role === "USER"
+                      ? "inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
+                      : user.role === "AGENT"
+                      ? "inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold"
+                      : user.role === "ADMIN"
+                      ? "inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold"
+                      : "inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-semibold"
+                  }
+                >
+                  {user.role}
+                </span>
+              )}
             </td>
             <td className="px-2 py-2 border whitespace-nowrap text-center">
               {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
