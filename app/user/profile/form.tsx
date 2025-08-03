@@ -105,11 +105,14 @@ export function EditableProfileForm({
                             name="fullName"
                             defaultValue={user.agent.fullName}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Phone"
                             name="phone"
                             defaultValue={user.agent.phone}
+                            disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Date of Birth"
@@ -123,42 +126,49 @@ export function EditableProfileForm({
                                     : ""
                             }
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Gender"
                             name="gender"
                             defaultValue={user.agent.gender}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Address"
                             name="address"
                             defaultValue={user.agent.address}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Locality"
                             name="locality"
                             defaultValue={user.agent.locality}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="National ID"
                             name="nationalId"
                             defaultValue={user.agent.nationalId ?? ""}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="ID Type"
                             name="idType"
                             defaultValue={user.agent.idType ?? ""}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                         <Input
                             label="Joined At"
                             name="joinedAt"
                             defaultValue={user.agent.joinedAt ? new Date(user.agent.joinedAt).toLocaleString() : ""}
                             disabled
+                            className="bg-gray-100 rounded-md"
                         />
                     </>
                 )}

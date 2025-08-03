@@ -6,6 +6,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input: React.FC<InputProps> = ({ label, name, ...props }) => {
+  // Merge custom className with defaults, and apply special style for disabled
+  const { className = '', disabled, ...rest } = props;
+  const base = "w-full border border-gray-300 rounded-2xl px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const disabledStyle = disabled ? "bg-gray-100 cursor-not-allowed" : "";
   return (
     <div className="flex flex-col space-y-1">
       <label htmlFor={name} className="text-sm font-medium text-gray-700">
@@ -14,8 +18,9 @@ export const Input: React.FC<InputProps> = ({ label, name, ...props }) => {
       <input
         id={name}
         name={name}
-        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        {...props}
+        className={`${base} ${disabledStyle} ${className}`.trim()}
+        disabled={disabled}
+        {...rest}
       />
     </div>
   );
