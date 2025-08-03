@@ -21,7 +21,6 @@ type Property = {
 
 const columns = [
   { key: "title", label: "Title" },
-  { key: "slug", label: "Slug" },
   { key: "propertyType", label: "Type" },
   { key: "bedrooms", label: "Bedrooms" },
   { key: "bathrooms", label: "Bathrooms" },
@@ -98,17 +97,26 @@ export default function AgentPropertiesPage() {
           <table className="min-w-[1100px] w-full border text-xs md:text-sm">
             <thead>
               <tr>
-                {columns.map(col => (
-                  <th key={col.key} className="border px-2 py-2 bg-gray-100 text-left font-semibold whitespace-nowrap">{col.label}</th>
-                ))}
+                {columns.map(col => {
+                  const rightAlign = ["bedrooms", "bathrooms", "area", "price"].includes(col.key);
+                  return (
+                    <th
+                      key={col.key}
+                      className={`border px-2 py-2 bg-gray-100 font-semibold whitespace-nowrap ${rightAlign ? 'text-right' : 'text-center'}`}
+                    >
+                      {col.label}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
               {properties.map(property => (
                 <tr key={property.id} className="even:bg-gray-50">
-                  {columns.map(col => (
-                    col.key === "actions" ? (
-                      <td key={col.key} className="border px-2 py-1">
+                  {columns.map(col => {
+                    const rightAlign = ["bedrooms", "bathrooms", "area", "price"].includes(col.key);
+                    return col.key === "actions" ? (
+                      <td key={col.key} className="border px-2 py-1 text-center">
                         <div className="flex gap-2 justify-center">
                           <a
                             href={`/user/agent/properties/edit/${property.id}`}
@@ -125,13 +133,27 @@ export default function AgentPropertiesPage() {
                         </div>
                       </td>
                     ) : (
-                      <td key={col.key} className="border px-2 py-1">
-                        {col.key === 'listedAt' || col.key === 'updatedAt'
-                          ? (property[col.key] ? new Date(property[col.key] as string).toLocaleDateString() : "")
-                          : String(property[col.key as keyof Property] ?? "")}
+                      <td key={col.key} className={`border px-2 py-1 ${rightAlign ? 'text-right' : 'text-center'}`}>
+                        {col.key === 'listedAt' || col.key === 'updatedAt' ? (
+                          property[col.key] ? new Date(property[col.key] as string).toLocaleDateString() : ""
+                        ) : col.key === 'furnished' ? (
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${property.furnished ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                            {property.furnished ? 'Furnished' : 'Unfurnished'}
+                          </span>
+                        ) : col.key === 'available' ? (
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${property.available ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                            {property.available ? 'Available' : 'Not Available'}
+                          </span>
+                        ) : col.key === 'published' ? (
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${property.published ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                            {property.published ? 'Published' : 'Unpublished'}
+                          </span>
+                        ) : (
+                          String(property[col.key as keyof Property] ?? "")
+                        )}
                       </td>
-                    )
-                  ))}
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
 	const type = searchParams.get("type");
 	const minPrice = searchParams.get("minPrice");
 	const maxPrice = searchParams.get("maxPrice");
-	const tags = searchParams.getAll("tags"); // tags[]=tag1&tags[]=tag2
+	const tags = searchParams.getAll("tags");
 	const available = searchParams.get("available");
 	const published = searchParams.get("published");
 	const bedrooms = searchParams.get("bedrooms");
@@ -129,9 +129,10 @@ export async function GET(req: NextRequest) {
 	  if (!session?.user?.email) {
 		return new Response("Unauthorized", { status: 401 });
 	  }
+	  // Only fetch agent id
 	  const user = await prisma.user.findUnique({
 		where: { email: session.user.email },
-		include: { agent: true },
+		select: { agent: { select: { id: true } } },
 	  });
 	  if (!user?.agent?.id) {
 		return new Response("Agent profile not found", { status: 403 });
@@ -141,25 +142,36 @@ export async function GET(req: NextRequest) {
 
 	// Remove undefined fields
 	Object.keys(filters).forEach((key) => {
-	if (filters[key] === undefined) delete filters[key];
-  });
-
-	const properties = await prisma.property.findMany({
-	  where: filters,
-	  skip,
-	  take: limit,
-	  orderBy: {
-		[sortBy]: order,
-	  },
-	  include: {
-		agent: true,
-		amenities: true,
-		reviews: true,
-	  },
+	  if (filters[key] === undefined) delete filters[key];
 	});
-  //
 
-	const total = await prisma.property.count({ where: filters });
+	// Only include agent id for table, skip amenities/reviews for speed
+	const [properties, total] = await Promise.all([
+	  prisma.property.findMany({
+		where: filters,
+		skip,
+		take: limit,
+		orderBy: {
+		  [sortBy]: order,
+		},
+		select: {
+		  id: true,
+		  title: true,
+		  slug: true,
+		  propertyType: true,
+		  bedrooms: true,
+		  bathrooms: true,
+		  area: true,
+		  price: true,
+		  furnished: true,
+		  available: true,
+		  published: true,
+		  listedAt: true,
+		  updatedAt: true,
+		},
+	  }),
+	  prisma.property.count({ where: filters }),
+	]);
 
 	return Response.json({
 	  properties,

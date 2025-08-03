@@ -171,19 +171,21 @@ export default function EditPropertyPage() {
             <input name="price" type="number" min={0} value={form.price} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
           </div>
         </div>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input name="furnished" type="checkbox" checked={form.furnished} onChange={handleChange} />
-            Furnished
-          </label>
-          <label className="flex items-center gap-2">
-            <input name="available" type="checkbox" checked={form.available} onChange={handleChange} />
-            Available
-          </label>
-          <label className="flex items-center gap-2">
-            <input name="published" type="checkbox" checked={form.published} onChange={handleChange} />
-            Published
-          </label>
+        <div className="flex gap-8 justify-center items-center">
+          <div className="flex gap-16 justify-center items-center">
+            <label className="flex flex-row items-center gap-2">
+              <input name="furnished" type="checkbox" checked={form.furnished} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Furnished</span>
+            </label>
+            <label className="flex flex-row items-center gap-2">
+              <input name="available" type="checkbox" checked={form.available} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Available</span>
+            </label>
+            <label className="flex flex-row items-center gap-2">
+              <input name="published" type="checkbox" checked={form.published} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Published</span>
+            </label>
+          </div>
         </div>
         <div>
           <label className="block font-semibold mb-1">Address</label>

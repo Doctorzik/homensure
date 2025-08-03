@@ -105,7 +105,7 @@ export default function AddPropertyPage() {
         body: JSON.stringify({ ...form, agentId }),
       });
       if (res.ok) {
-        router.push("/agent/properties/list");
+        router.push("user/agent/properties");
       } else {
         setSubmitting(false);
         alert("Failed to add property. Please try again.");
@@ -156,19 +156,21 @@ export default function AddPropertyPage() {
             <input name="price" type="number" min={0} value={form.price} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
           </div>
         </div>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input name="furnished" type="checkbox" checked={form.furnished} onChange={handleChange} />
-            Furnished
-          </label>
-          <label className="flex items-center gap-2">
-            <input name="available" type="checkbox" checked={form.available} onChange={handleChange} />
-            Available
-          </label>
-          <label className="flex items-center gap-2">
-            <input name="published" type="checkbox" checked={form.published} onChange={handleChange} />
-            Published
-          </label>
+        <div className="flex gap-8 justify-center items-center">
+          <div className="flex gap-16 justify-center items-center">
+            <label className="flex flex-row items-center gap-2">
+              <input name="furnished" type="checkbox" checked={form.furnished} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Furnished</span>
+            </label>
+            <label className="flex flex-row items-center gap-2">
+              <input name="available" type="checkbox" checked={form.available} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Available</span>
+            </label>
+            <label className="flex flex-row items-center gap-2">
+              <input name="published" type="checkbox" checked={form.published} onChange={handleChange} className="w-6 h-6 accent-blue-600" />
+              <span className="text-sm">Published</span>
+            </label>
+          </div>
         </div>
         <div>
           <label className="block font-semibold mb-1">Address</label>
@@ -224,13 +226,59 @@ export default function AddPropertyPage() {
           </div>
         </div>
         <div className="flex gap-4">
-          <button type="submit" disabled={submitting} className="flex-1 bg-primary text-white py-2 rounded font-semibold hover:bg-primary/90 transition-colors">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex-1 bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700 transition-colors"
+          >
             {submitting ? "Adding..." : "Add Property"}
           </button>
           <button
             type="button"
             className="flex-1 bg-gray-300 text-gray-800 py-2 rounded font-semibold hover:bg-gray-400 transition-colors"
-            onClick={() => window.location.href = '/user/agent/properties'}
+            onClick={() => {
+              const isDirty = Object.keys(initialState).some(
+                (key) => {
+                  const val = form[key as keyof typeof initialState];
+                  const init = initialState[key as keyof typeof initialState];
+                  return val !== init;
+                }
+              );
+              if (isDirty) {
+                // Custom modal for clarity
+                const modal = document.createElement('div');
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+                modal.style.background = 'rgba(0,0,0,0.4)';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = '9999';
+                modal.innerHTML = `
+                  <div style="background:white;padding:2rem 2rem 1.5rem 2rem;border-radius:1rem;max-width:90vw;width:350px;box-shadow:0 4px 32px rgba(0,0,0,0.18);text-align:center;">
+                    <div style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;">You have unsaved changes</div>
+                    <div style="margin-bottom:1.5rem;">Are you sure you want to leave this page and discard them?</div>
+                    <div style="display:flex;gap:1rem;justify-content:center;">
+                      <button id="stayBtn" style="flex:1;padding:0.5rem 0;background:#4b5563;color:white;border:none;border-radius:0.5rem;font-weight:600;">Stay on Page</button>
+                      <button id="discardBtn" style="flex:1;padding:0.5rem 0;background:#dc2626;color:white;border:none;border-radius:0.5rem;font-weight:600;">Discard Changes</button>
+                    </div>
+                  </div>
+                `;
+                document.body.appendChild(modal);
+                modal.querySelector('#stayBtn')?.addEventListener('click', () => {
+                  document.body.removeChild(modal);
+                });
+                modal.querySelector('#discardBtn')?.addEventListener('click', () => {
+                  document.body.removeChild(modal);
+                  window.location.href = '/user/agent/properties';
+                });
+                return;
+              }
+              window.location.href = '/user/agent/properties';
+            }}
             disabled={submitting}
           >
             Cancel
