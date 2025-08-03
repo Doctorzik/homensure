@@ -1,5 +1,7 @@
 "use client";
+
 import { useEffect, useState } from "react";
+
 
 type Property = {
   id: string;
@@ -98,7 +100,6 @@ export default function AgentPropertiesListPage() {
 
   return (
     <div>
-      <h1>Agent Properties List</h1>
       {loading ? (
         <div>Loading...</div>
       ) : (
@@ -112,13 +113,25 @@ export default function AgentPropertiesListPage() {
           </thead>
           <tbody>
             {properties.map(property => (
-              editing && editing.id === property.id ? (
+              (editing && editing.id === property.id) ? (
                 <tr key={property.id} className="bg-yellow-50">
                   {columns.map(col => (
                     col.key === "actions" ? (
                       <td key={col.key} className="border px-2 py-1">
-                        <button onClick={handleSaveEdit} className="text-green-600 mr-2">Save</button>
-                        <button onClick={handleCancelEdit} className="text-gray-600">Cancel</button>
+                          <div className="flex flex-row gap-2 justify-center items-center">
+                          <button
+                            onClick={handleSaveEdit}
+                            className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="bg-gray-400 text-white px-2 py-1 rounded text-xs"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </td>
                     ) : (
                       <td key={col.key} className="border px-2 py-1">
@@ -135,23 +148,84 @@ export default function AgentPropertiesListPage() {
               ) : (
                 <tr key={property.id}>
                   {columns.map(col => (
-                    col.key === "actions" ? (
-                      <td key={col.key} className="border px-2 py-1">
-                        <button onClick={() => handleEdit(property)} className="text-blue-600 mr-2">Edit</button>
-                        <button onClick={() => handleDelete(property.id)} className="text-red-600">Delete</button>
-                      </td>
-                    ) : (
-                      <td key={col.key} className="border px-2 py-1">
-                        {String(property[col.key as keyof Property] ?? "")}
-                      </td>
-                    )
+                    col.key === "actions"
+                      ? (
+                        <td key={col.key} className="border px-2 py-1">
+                          <div className="flex flex-row gap-6 justify-center items-center">
+                            <button
+                              className="text-blue-600 hover:underline px-2 py-1 text-xs"
+                              onClick={() => handleEdit(property)}
+                            >
+                              Edit
+                            </button>
+                            <span className="h-5 w-px bg-gray-300 mx-1" />
+                            <DeletePropertyButton
+                              propertyId={property.id}
+                              propertyTitle={property.title}
+                              onDelete={handleDelete}
+                            />
+                          </div>
+                        </td>
+                      )
+                      : (
+                        <td key={col.key} className="border px-2 py-1">
+                          {String(property[col.key as keyof Property] ?? "")}
+                        </td>
+                      )
                   ))}
                 </tr>
               )
             ))}
           </tbody>
         </table>
+
       )}
+
+
     </div>
   );
 }
+
+type DeletePropertyButtonProps = {
+  propertyId: string;
+  propertyTitle: string;
+  onDelete: (id: string) => void;
+};
+
+function DeletePropertyButton({ propertyId, propertyTitle, onDelete }: DeletePropertyButtonProps) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  return (
+    <>
+      <button
+        className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+        onClick={() => setShowConfirm(true)}
+      >
+        Delete
+      </button>
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 flex flex-col items-center">
+            <p className="mb-4 text-center text-sm">
+              Are you sure you want to delete property <span className="font-semibold text-red-700">{propertyTitle}</span>?
+            </p>
+            <div className="flex flex-row gap-10 mt-2">
+              <button
+                className="bg-red-600 text-white px-4 py-1 rounded text-xs"
+                onClick={() => { onDelete(propertyId); setShowConfirm(false); }}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="bg-gray-400 text-white px-4 py-1 rounded text-xs"
+                onClick={() => setShowConfirm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+

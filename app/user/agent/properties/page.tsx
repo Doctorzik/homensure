@@ -35,15 +35,11 @@ const columns = [
   { key: "actions", label: "Actions" },
 ];
 
-
-
-
 export default function AgentPropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-
-
-
+  // Removed editing state after switching to a dedicated edit page
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     async function fetchProperties() {
@@ -58,102 +54,113 @@ export default function AgentPropertiesPage() {
     fetchProperties();
   }, []);
 
-  const [editing, setEditing] = useState<{ id: string; values: Partial<Property> } | null>(null);
+  // Removed unused edit-related functions after switching to a dedicated edit page
 
-  function handleEdit(property: Property) {
-    setEditing({ id: property.id, values: { ...property } });
-  }
-  function handleCancelEdit() {
-    setEditing(null);
-  }
-  function handleEditChange(field: keyof Property, value: string | number | boolean) {
-    if (!editing) return;
-    setEditing({ ...editing, values: { ...editing.values, [field]: value } });
+  function openDeleteConfirm(property: Property) {
+    setDeleteConfirm({ id: property.id, title: property.title });
   }
 
-  async function handleSaveEdit() {
-    if (!editing) return;
+  async function confirmDelete() {
+    if (!deleteConfirm) return;
     try {
-      const res = await fetch(`/api/properties/${editing.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editing.values),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProperties((prev) => prev.map(p => p.id === editing.id ? data.property : p));
-      }
-    } catch {}
-    setEditing(null);
-  }
-
-  async function handleDelete(propertyId: string) {
-    if (!window.confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
-      return;
-    }
-    try {
-      const res = await fetch(`/api/properties/${propertyId}`, { method: "DELETE" });
+      const res = await fetch(`/api/properties/${deleteConfirm.id}`, { method: "DELETE" });
       if (res.ok || res.status === 204) {
-        setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+        setProperties((prev) => prev.filter((p) => p.id !== deleteConfirm.id));
       }
     } catch {}
+    setDeleteConfirm(null);
+  }
+
+  function cancelDelete() {
+    setDeleteConfirm(null);
   }
 
   return (
-    <div>
-      <h1>Agent Properties</h1>
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <table className="min-w-full border mt-6">
-          <thead>
-            <tr>
-              {columns.map(col => (
-                <th key={col.key} className="border px-2 py-1 bg-gray-100">{col.label}</th>
+    <div className="w-full max-w-[98vw] mx-auto p-2 md:p-6">
+      <h1 className="text-2xl font-bold mb-4">Agent Properties</h1>
+      {/* Add Property Card */}
+      <div className="w-full flex justify-center mb-6">
+        <div className="bg-white rounded-xl shadow p-4 md:p-6 w-full max-w-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="text-lg font-semibold">Add a Property</div>
+          <button
+            className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm font-semibold shadow"
+            onClick={() => window.location.href = '/user/agent/properties/add'}
+          >
+            Create New
+          </button>
+        </div>
+      </div>
+      {/* Properties Table Card */}
+      <div className="bg-white rounded-xl shadow p-2 md:p-6 w-full overflow-x-auto">
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <table className="min-w-[1100px] w-full border text-xs md:text-sm">
+            <thead>
+              <tr>
+                {columns.map(col => (
+                  <th key={col.key} className="border px-2 py-2 bg-gray-100 text-left font-semibold whitespace-nowrap">{col.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {properties.map(property => (
+                <tr key={property.id} className="even:bg-gray-50">
+                  {columns.map(col => (
+                    col.key === "actions" ? (
+                      <td key={col.key} className="border px-2 py-1">
+                        <div className="flex gap-2 justify-center">
+                          <a
+                            href={`/user/agent/properties/edit/${property.id}`}
+                            className="inline-flex items-center px-6 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs font-semibold"
+                          >
+                            Edit
+                          </a>
+                          <button
+                            onClick={() => openDeleteConfirm(property)}
+                            className="inline-flex items-center px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs font-semibold"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    ) : (
+                      <td key={col.key} className="border px-2 py-1">
+                        {col.key === 'listedAt' || col.key === 'updatedAt'
+                          ? (property[col.key] ? new Date(property[col.key] as string).toLocaleDateString() : "")
+                          : String(property[col.key as keyof Property] ?? "")}
+                      </td>
+                    )
+                  ))}
+                </tr>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {properties.map(property => (
-              editing && editing.id === property.id ? (
-                <tr key={property.id} className="bg-yellow-50">
-                  {columns.map(col => (
-                    col.key === "actions" ? (
-                      <td key={col.key} className="border px-2 py-1">
-                        <button onClick={handleSaveEdit} className="text-green-600 mr-2">Save</button>
-                        <button onClick={handleCancelEdit} className="text-gray-600">Cancel</button>
-                      </td>
-                    ) : (
-                      <td key={col.key} className="border px-2 py-1">
-                        <input
-                          className="border px-1 py-0.5 w-full"
-                          value={String(editing.values[col.key as keyof Property] ?? "")}
-                          onChange={e => handleEditChange(col.key as keyof Property, e.target.value)}
-                          disabled={col.key === 'id' || col.key === 'slug' || col.key === 'listedAt' || col.key === 'updatedAt'}
-                        />
-                      </td>
-                    )
-                  ))}
-                </tr>
-              ) : (
-                <tr key={property.id}>
-                  {columns.map(col => (
-                    col.key === "actions" ? (
-                      <td key={col.key} className="border px-2 py-1">
-                        <button onClick={() => handleEdit(property)} className="text-blue-600 mr-2">Edit</button>
-                        <button onClick={() => handleDelete(property.id)} className="text-red-600">Delete</button>
-                      </td>
-                    ) : (
-                      <td key={col.key} className="border px-2 py-1">
-                        {String(property[col.key as keyof Property] ?? "")}
-                      </td>
-                    )
-                  ))}
-                </tr>
-              )
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        )}
+      </div>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 flex flex-col items-center">
+            <p className="mb-4 text-center text-sm">
+              Are you sure you want to delete property <span className="font-semibold text-red-700">{deleteConfirm.title}</span>?
+            </p>
+            <div className="flex flex-row gap-6 mt-2">
+              <button
+                className="bg-red-600 text-white px-3 py-1 rounded text-xs min-w-[80px]"
+                onClick={confirmDelete}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="bg-gray-400 text-white px-3 py-1 rounded text-xs min-w-[80px]"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

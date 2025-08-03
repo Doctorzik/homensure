@@ -223,9 +223,19 @@ export default function AddPropertyPage() {
             </select>
           </div>
         </div>
-        <button type="submit" disabled={submitting} className="w-full bg-primary text-white py-2 rounded font-semibold hover:bg-primary/90 transition-colors">
-          {submitting ? "Adding..." : "Add Property"}
-        </button>
+        <div className="flex gap-4">
+          <button type="submit" disabled={submitting} className="flex-1 bg-primary text-white py-2 rounded font-semibold hover:bg-primary/90 transition-colors">
+            {submitting ? "Adding..." : "Add Property"}
+          </button>
+          <button
+            type="button"
+            className="flex-1 bg-gray-300 text-gray-800 py-2 rounded font-semibold hover:bg-gray-400 transition-colors"
+            onClick={() => window.location.href = '/user/agent/properties'}
+            disabled={submitting}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
