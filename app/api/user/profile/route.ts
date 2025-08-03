@@ -17,5 +17,9 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ user });
+  const hasPendingApplication = !!(await prisma.agentApplication.findFirst({
+    where: { userId: user.id, status: "PENDING" },
+  }));
+
+  return NextResponse.json({ user, hasPendingApplication });
 }

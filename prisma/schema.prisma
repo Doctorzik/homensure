@@ -22,7 +22,7 @@ model User {
   agent            Agent?
   Authenticator    Authenticator[]
   sessions         Session[]
-  AgentApplication AgentApplication?
+  AgentApplication AgentApplication[]
   Review           Review[]
 }
 
@@ -108,7 +108,7 @@ enum ApplicationStatus {
 
 model AgentApplication {
   id                  String            @id @default(cuid())
-  userId              String            @unique
+  userId              String
   firstName           String
   lastName            String
   phone               Int

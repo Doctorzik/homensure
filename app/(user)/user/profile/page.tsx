@@ -9,6 +9,7 @@ import { EditableProfileForm, DisplayItem } from "./form";
 
 export default function UserProfilePage() {
     const [user, setUser] = useState<any>(null);
+    const [hasPendingApplication, setHasPendingApplication] = useState(false);
     const [editing, setEditing] = useState(false);
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -26,6 +27,7 @@ export default function UserProfilePage() {
             if (response.ok) {
                 const data = await response.json();
                 setUser(data.user);
+                setHasPendingApplication(!!data.hasPendingApplication);
             } else {
                 router.push("/");
             }
@@ -111,18 +113,24 @@ export default function UserProfilePage() {
                 Edit Profile
             </Button>
 
-            {/* Apply to Become an Agent section in a card (hide for admins) */}
+            {/* Apply to Become an Agent section in a card (hide for admins, or if user has pending app) */}
             {user.role !== "ADMIN" && (
                 <div className="bg-white p-8 rounded-2xl shadow space-y-4 mt-8">
                     <h2 className="text-2xl font-semibold mb-2">
                         Apply to Become an Agent
                     </h2>
-                    <Button
-                        onClick={() => router.push("/agent/apply")}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                        Apply
-                    </Button>
+                    {hasPendingApplication ? (
+                        <div className="text-yellow-700 bg-yellow-100 border border-yellow-300 rounded p-4">
+                            You have a pending agent application. Please wait for review.
+                        </div>
+                    ) : (
+                        <Button
+                            onClick={() => router.push("/agent/apply")}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            Apply
+                        </Button>
+                    )}
                 </div>
             )}
         </div>

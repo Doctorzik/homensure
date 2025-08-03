@@ -3,12 +3,36 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
 
+
 async function approveApplication(id: string) {
   "use server";
-  await prisma.agentApplication.update({
+  // 1. Mark application as approved
+  const application = await prisma.agentApplication.update({
     where: { id },
     data: { status: "APPROVED" },
   });
+
+  // 2. Check if Agent already exists for this user
+  const existingAgent = await prisma.agent.findUnique({
+    where: { userId: application.userId },
+  });
+  if (!existingAgent) {
+    await prisma.agent.create({
+      data: {
+        userId: application.userId,
+        fullName: application.firstName + " " + application.lastName,
+        phone: String(application.phone),
+        dateOfBirth: application.dateOfBirth,
+        gender: application.gender,
+        address: application.address,
+        locality: application.desiredLocality,
+        nationalId: application.nationalIdNumber,
+        idType: application.proofOfIdentityType,
+        idUrl: application.proofOfIdentityUrl,
+        // joinedAt will default to now()
+      },
+    });
+  }
 }
 
 async function rejectApplication(id: string) {
