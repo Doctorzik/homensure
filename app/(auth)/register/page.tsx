@@ -30,12 +30,23 @@ export default function RegisterPage() {
 			return;
 		}
 
-		const formValue = new FormData()
-		formValue.append("email", form.email)
-		formValue.append("password", form.password)
-		formValue.append("name", form.name)
+		// Call the API route instead of createUser directly
+		const response = await fetch('/api/register', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				name: form.name,
+				email: form.email,
+				password: form.password,
+			}),
+		});
 
-		const response = await createUser(formValue)
+		const data = await response.json();
+
+		if (!response.ok) {
+			setError(data.error || "Registration failed.");
+			return;
+		}
 
 		// On success, redirect to login
 		router.push('/login');

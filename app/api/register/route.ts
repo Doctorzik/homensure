@@ -10,9 +10,9 @@ export async function POST(req: Request) {
 	try {
 	
 		const body = await req.json();
-		const { email, password } = body;
+		const { name, email, password } = body;
 
-		const validated = userSchema.safeParse({ email, password });
+		const validated = userSchema.safeParse({ name, email, password });
 
 		if (!validated.success) {
 			return NextResponse.json({ error: "Invalid input" }, { status: 400 });
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
 
 		const user = await prisma.user.create({
 			data: {
+				name,
 				email,
 				password: hashedPassword,
 			},

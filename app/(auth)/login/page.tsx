@@ -13,7 +13,13 @@ export default async function Login() {
 
 
   if (session) {
-    redirect("/properties")
+    if (session.user?.role === "ADMIN") {
+      redirect("/system/dashboard");
+    } else if (session.user?.role === "AGENT") {
+      redirect("/agent/profile");
+    } else {
+      redirect("/properties");
+    }
   }
 
 
