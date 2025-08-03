@@ -1,20 +1,38 @@
 // File: app/(user)/user/profile/form.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+
+
+
+interface AgentProfile {
+    fullName?: string;
+    phone?: string;
+    dateOfBirth?: string | Date;
+    gender?: string;
+    address?: string;
+    locality?: string;
+    nationalId?: string | null;
+    idType?: string | null;
+    joinedAt?: string | Date;
+}
+
 interface EditableProfileFormProps {
-    user: any;
-    sessionEmail: string;
+    user: {
+        name?: string;
+        email?: string;
+        role?: string;
+        agent?: AgentProfile;
+    };
     onCancel: () => void;
 }
 
 export function EditableProfileForm({
     user,
-    sessionEmail,
     onCancel,
 }: EditableProfileFormProps) {
     const [error, setError] = useState<string | null>(null);
@@ -139,7 +157,7 @@ export function EditableProfileForm({
                         <Input
                             label="Joined At"
                             name="joinedAt"
-                            defaultValue={new Date(user.agent.joinedAt).toLocaleString()}
+                            defaultValue={user.agent.joinedAt ? new Date(user.agent.joinedAt).toLocaleString() : ""}
                             disabled
                         />
                     </>

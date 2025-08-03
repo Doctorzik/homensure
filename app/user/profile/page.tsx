@@ -73,7 +73,6 @@ export default function UserProfilePage() {
         return (
             <EditableProfileForm
                 user={user}
-                sessionEmail={user.email}
                 onCancel={() => setEditing(false)}
             />
         );

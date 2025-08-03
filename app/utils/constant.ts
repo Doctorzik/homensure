@@ -4,8 +4,9 @@ export const appUrls = {
     landingPage: "/",
     properties: "/properties",
     userProfile: "/user/profile",
-    agentProfile: "/agent/profile",
-    agentApply: "/agent/apply",
+    agentProfile: "/user/agent/profile",
+    agentProperties: "/user/agent/properties",
+    agentApply: "/user/agent/apply",
     login: {
         landing: "/login",
         register: "/register",

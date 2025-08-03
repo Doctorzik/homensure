@@ -22,12 +22,12 @@ export async function middleware(req: NextRequest) {
         }
 
         // Agent routes
-        if (pathname.startsWith("/agent/profile") && token.role !== "AGENT") {
+        if ((pathname.startsWith("/user/agent/profile") || pathname.startsWith("/user/agent/properties")) && token.role !== "AGENT") {
             return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
 
-        // User routes (allow USER and ADMIN for /user/profile and /agent/apply)
-        if ((pathname.startsWith("/user/profile") || pathname.startsWith("/agent/apply")) 
+        // User routes (allow USER and ADMIN for /user/profile and /user/agent/apply)
+        if ((pathname.startsWith("/user/profile") || pathname.startsWith("/user/agent/apply")) 
             && token.role !== "USER" && token.role !== "ADMIN") {
             return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
@@ -38,9 +38,10 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/agent/profile/:path*',
+        '/user/agent/profile/:path*',
+        '/user/agent/properties/:path*',
         '/system/:path*',
         '/user/profile/:path*',
-        '/agent/apply/:path*'
+        '/user/agent/apply/:path*'
     ]
 };

@@ -44,7 +44,7 @@ export function NavBar() {
     let showDashboard = false;
     let dashboardHref = "/system/dashboard";
     let showAgentProperties = false;
-    let agentPropertiesHref = "/agent/properties";
+    let agentPropertiesHref = appUrls.agentProperties;
     if (session?.user) {
         switch (session.user.role) {
             case "USER":
@@ -57,7 +57,7 @@ export function NavBar() {
                 profileLabel = "Agent Profile";
                 profileIcon  = <User2 />;
                 showAgentProperties = true;
-                agentPropertiesHref = "/agent/properties";
+                agentPropertiesHref = appUrls.agentProperties;
                 break;
             case "ADMIN":
                 profileHref  = "/user/profile";

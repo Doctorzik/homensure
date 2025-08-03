@@ -56,7 +56,7 @@ export function LoginForm({ email, password }: LoginFormProps) {
 		setPending(false);
 
 		if (session?.user?.role === "AGENT") {
-		router.push("/agent/profile");
+		router.push("/user/agent/profile");
 		} else if (session?.user?.role === "ADMIN") {
 		router.push("/system/dashboard");
 		} else {

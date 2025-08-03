@@ -16,7 +16,7 @@ export default async function Login() {
     if (session.user?.role === "ADMIN") {
       redirect("/system/dashboard");
     } else if (session.user?.role === "AGENT") {
-      redirect("/agent/profile");
+      redirect("/user/agent/profile");
     } else {
       redirect("/properties");
     }
