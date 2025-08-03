@@ -1,14 +1,29 @@
 // File: app/(user)/user/profile/page.tsx
 
-"use client";
 
+
+
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EditableProfileForm, DisplayItem } from "./form";
 
+type Agent = {
+    fullName: string;
+    phone: string;
+    dateOfBirth: string;
+    // Add other agent fields as needed
+};
+type User = {
+    name: string;
+    email: string;
+    role: string;
+    agent?: Agent;
+};
+
 export default function UserProfilePage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [hasPendingApplication, setHasPendingApplication] = useState(false);
     const [editing, setEditing] = useState(false);
     const searchParams = useSearchParams();

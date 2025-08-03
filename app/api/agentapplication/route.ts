@@ -1,7 +1,19 @@
+// Type guard for Prisma error
+function isPrismaP2002Error(err: unknown): err is { code: string; meta?: { target?: string[] } } {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: unknown }).code === "P2002" &&
+    "meta" in err &&
+    Array.isArray((err as { meta?: { target?: unknown } }).meta?.target)
+  );
+}
 // File: app/api/agentapplication/route.ts
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { Gender } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -50,7 +62,7 @@ export async function POST(req: Request) {
         lastName,
         phone:             parseInt(phoneStr, 10),
         dateOfBirth:       new Date(dateOfBirthStr),
-        gender,
+        gender: gender as Gender,
         nationalIdNumber,
         proofOfIdentityUrl,
         proofOfIdentityType,
@@ -64,8 +76,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    if (err.code === "P2002" && err.meta?.target?.includes("userId")) {
+  } catch (err: unknown) {
+    if (isPrismaP2002Error(err) && err.meta?.target?.includes("userId")) {
       return NextResponse.json(
         { error: "You have already submitted an application. Please wait for review." },
         { status: 400 }

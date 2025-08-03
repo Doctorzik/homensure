@@ -45,7 +45,7 @@ export default function ApplyAgentPage() {
 		const uploadJson = await uploadRes.json();
 		proofOfIdentityUrl = uploadJson.url;
 		proofOfIdentityType = file.name.split(".").pop()?.toLowerCase() || "";
-		} catch (err) {
+		} catch {
 		setError("Failed to upload proof of identity file.");
 		setLoading(false);
 		return;
@@ -90,19 +90,19 @@ export default function ApplyAgentPage() {
 		<form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
 			<div>
 			<label className="block font-medium">First Name *</label>
-			<Input name="firstName" required />
+			<Input name="firstName" label="First Name" required />
 			</div>
 			<div>
 			<label className="block font-medium">Last Name *</label>
-			<Input name="lastName" required />
+			<Input name="lastName" label="Last Name" required />
 			</div>
 			<div>
 			<label className="block font-medium">Phone *</label>
-			<Input name="phone" type="tel" required />
+			<Input name="phone" type="tel" label="Phone" required />
 			</div>
 			<div>
 			<label className="block font-medium">Date of Birth *</label>
-			<Input name="dateOfBirth" type="date" required />
+			<Input name="dateOfBirth" type="date" label="Date of Birth" required />
 			</div>
 			<div>
 			<label className="block font-medium">Gender *</label>
@@ -114,33 +114,34 @@ export default function ApplyAgentPage() {
 			</div>
 			<div>
 			<label className="block font-medium">National ID Number *</label>
-			<Input name="nationalIdNumber" required />
+			<Input name="nationalIdNumber" label="National ID Number" required />
 			</div>
 			<div>
 			<label className="block font-medium">Proof of Identity (PDF/JPG) *</label>
-			<Input
+			<input
 				name="proofOfIdentity"
 				type="file"
 				accept=".pdf,.jpg,.jpeg,.png"
 				required
 				ref={fileInputRef}
+				className="w-full border rounded px-2 py-1"
 			/>
 			</div>
 			<div>
 			<label className="block font-medium">Address *</label>
-			<Input name="address" required />
+			<Input name="address" label="Address" required />
 			</div>
 			<div>
 			<label className="block font-medium">Video Introduction URL *</label>
-			<Input name="videoUrl" type="url" required />
+			<Input name="videoUrl" type="url" label="Video Introduction URL" required />
 			</div>
 			<div>
 			<label className="block font-medium">Desired Locality *</label>
-			<Input name="desiredLocality" required />
+			<Input name="desiredLocality" label="Desired Locality" required />
 			</div>
 			<div>
 			<label className="block font-medium">Experience (years) *</label>
-			<Input name="experience" type="number" min={0} required />
+			<Input name="experience" type="number" min={0} label="Experience (years)" required />
 			</div>
 			<div>
 			<label className="block font-medium">Motivation *</label>
@@ -148,7 +149,7 @@ export default function ApplyAgentPage() {
 			</div>
 			<div>
 			<label className="block font-medium">Past Roles (optional)</label>
-			<Input name="pastRoles" />
+			<Input name="pastRoles" label="Past Roles" />
 			</div>
 
 			{/* Show duplicate application error above the button */}

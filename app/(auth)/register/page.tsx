@@ -4,8 +4,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createUser } from '@/lib/actions/auth-action';
-import { email } from 'zod';
 
 export default function RegisterPage() {
 
