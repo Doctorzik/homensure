@@ -1,55 +1,188 @@
 // File: app/(agent)/agent/apply/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function ApplyAgentPage() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+	const router = useRouter();
+	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		setError(null);
+		setSuccess(null);
+		setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
+		const formData = new FormData(e.currentTarget);
 
-    try {
-      const res = await fetch("/api/agentapplication", {
-        method: "POST",
-        body: formData,
-      });
+		// 1. Upload the file and get URL/type
+		const file = fileInputRef.current?.files?.[0];
+		if (!file) {
+		setError("Proof of identity file is required.");
+		setLoading(false);
+		return;
+		}
 
-      if (res.ok) {
-        alert("Application submitted for review.");
-        router.push("/user/profile");
-      } else {
-        const body = await res.json().catch(() => ({}));
-        setError(body.error || "Submission failed. Try again.");
-      }
-    } catch {
-      setError("Network error. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+		// Example: Upload file to /api/upload (you must implement this endpoint)
+		const uploadData = new FormData();
+		uploadData.append("file", file);
 
-  return (
-    <div className="max-w-2xl mx-auto p-8 space-y-6 mt-12">
-      <h1 className="text-3xl font-extrabold">Apply to Become an Agent</h1>
+		let proofOfIdentityUrl = "";
+		let proofOfIdentityType = "";
 
-      {error && <div className="p-4 bg-red-100 text-red-800 rounded">{error}</div>}
+		try {
+		const uploadRes = await fetch("/api/upload", {
+			method: "POST",
+			body: uploadData,
+		});
+		if (!uploadRes.ok) throw new Error("File upload failed");
+		const uploadJson = await uploadRes.json();
+		proofOfIdentityUrl = uploadJson.url;
+		proofOfIdentityType = file.name.split(".").pop()?.toLowerCase() || "";
+		} catch (err) {
+		setError("Failed to upload proof of identity file.");
+		setLoading(false);
+		return;
+		}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* …all your inputs as before… */}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Submitting…" : "Submit Application"}
-        </Button>
-      </form>
-    </div>
-  );
+		// 2. Prepare data for agentapplication API
+		formData.delete("proofOfIdentity"); // Remove file
+		formData.append("proofOfIdentityUrl", proofOfIdentityUrl);
+		formData.append("proofOfIdentityType", proofOfIdentityType);
+
+		try {
+		const res = await fetch("/api/agentapplication", {
+			method: "POST",
+			body: formData,
+		});
+
+		if (res.ok) {
+			router.push("/user/profile?success=agent-application");
+			return;
+		} else {
+			const body = await res.json().catch(() => ({}));
+			setError(body.error || "Submission failed. Try again.");
+		}
+		} catch {
+		setError("Network error. Try again.");
+		} finally {
+		setLoading(false);
+		}
+	}
+
+	return (
+		<div className="max-w-2xl mx-auto p-8 space-y-6 mt-12">
+		<h1 className="text-3xl font-extrabold">Apply to Become an Agent</h1>
+
+		{success && (
+			<div className="p-4 bg-green-100 text-green-800 rounded font-semibold">
+			{success}
+			</div>
+		)}
+		{error && <div className="p-4 bg-red-100 text-red-800 rounded">{error}</div>}
+
+		<form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
+			<div>
+			<label className="block font-medium">First Name *</label>
+			<Input name="firstName" required />
+			</div>
+			<div>
+			<label className="block font-medium">Last Name *</label>
+			<Input name="lastName" required />
+			</div>
+			<div>
+			<label className="block font-medium">Phone *</label>
+			<Input name="phone" type="tel" required />
+			</div>
+			<div>
+			<label className="block font-medium">Date of Birth *</label>
+			<Input name="dateOfBirth" type="date" required />
+			</div>
+			<div>
+			<label className="block font-medium">Gender *</label>
+			<select name="gender" required className="w-full border rounded px-2 py-1">
+				<option value="">Select</option>
+				<option value="MALE">Male</option>
+				<option value="FEMALE">Female</option>
+			</select>
+			</div>
+			<div>
+			<label className="block font-medium">National ID Number *</label>
+			<Input name="nationalIdNumber" required />
+			</div>
+			<div>
+			<label className="block font-medium">Proof of Identity (PDF/JPG) *</label>
+			<Input
+				name="proofOfIdentity"
+				type="file"
+				accept=".pdf,.jpg,.jpeg,.png"
+				required
+				ref={fileInputRef}
+			/>
+			</div>
+			<div>
+			<label className="block font-medium">Address *</label>
+			<Input name="address" required />
+			</div>
+			<div>
+			<label className="block font-medium">Video Introduction URL *</label>
+			<Input name="videoUrl" type="url" required />
+			</div>
+			<div>
+			<label className="block font-medium">Desired Locality *</label>
+			<Input name="desiredLocality" required />
+			</div>
+			<div>
+			<label className="block font-medium">Experience (years) *</label>
+			<Input name="experience" type="number" min={0} required />
+			</div>
+			<div>
+			<label className="block font-medium">Motivation *</label>
+			<textarea name="motivation" required className="w-full border rounded px-2 py-1" />
+			</div>
+			<div>
+			<label className="block font-medium">Past Roles (optional)</label>
+			<Input name="pastRoles" />
+			</div>
+
+			{/* Show duplicate application error above the button */}
+			{error === "You have already submitted an application. Please wait for review." && (
+				<div className="p-3 mb-2 bg-yellow-100 text-yellow-800 rounded font-semibold text-center">
+					{error}
+				</div>
+			)}
+
+			<div className="flex gap-4">
+				<Button
+					type="submit"
+					disabled={loading}
+					className="text-white"
+				>
+					{loading ? "Submitting…" : "Submit Application"}
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					disabled={loading}
+					onClick={() => router.push("/user/profile")}
+				>
+					Cancel
+				</Button>
+			</div>
+
+			{/* Show other errors below the button */}
+			{error && error !== "You have already submitted an application. Please wait for review." && (
+				<div className="p-3 mt-2 bg-red-100 text-red-800 rounded font-semibold text-center">
+					{error}
+				</div>
+			)}
+		</form>
+		</div>
+	);
 }

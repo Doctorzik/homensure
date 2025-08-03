@@ -43,7 +43,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // 4) create application
     await prisma.agentApplication.create({
       data: {
         userId:            user.id,
@@ -61,12 +60,17 @@ export async function POST(req: Request) {
         experience:        experienceStr ? parseInt(experienceStr, 10) : undefined,
         motivation,
         pastRoles:         pastRoles || undefined,
-        // status & appliedAt use your Prisma defaults
       },
     });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes("userId")) {
+      return NextResponse.json(
+        { error: "You have already submitted an application. Please wait for review." },
+        { status: 400 }
+      );
+    }
     console.error("AgentApplication error:", err);
     return NextResponse.json(
       { error: "Failed to submit application." },

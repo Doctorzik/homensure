@@ -15,7 +15,8 @@ export default function UserProfilePage() {
 
     // Success message state
     const [showSuccess, setShowSuccess] = useState(
-        searchParams.get("success") === "1"
+        searchParams.get("success") === "1" ||
+        searchParams.get("success") === "agent-application"
     );
 
     useEffect(() => {
@@ -42,7 +43,7 @@ export default function UserProfilePage() {
                 router.replace(
                     `/user/profile${params.toString() ? "?" + params.toString() : ""}`
                 );
-            }, 5000);
+            }, 7000); // Show for 10 seconds
             return () => clearTimeout(timeout);
         }
     }, [showSuccess, router]);
@@ -67,7 +68,11 @@ export default function UserProfilePage() {
 
             {showSuccess && (
                 <div className="mb-6 p-4 rounded-xl bg-green-100 border border-green-300 text-green-800 flex justify-between items-center">
-                    <span>Profile updated successfully!</span>
+                    <span>
+                      {searchParams.get("success") === "agent-application"
+                        ? "Your application has been submitted! We'll review it and contact you soon."
+                        : "Profile updated successfully!"}
+                    </span>
                     <button
                         className="text-green-600 font-bold px-2"
                         aria-label="Close"
