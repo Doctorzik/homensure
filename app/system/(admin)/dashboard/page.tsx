@@ -1,6 +1,8 @@
 
+
 import React from "react";
 import UsersTableWrapper from "@/components/UsersTableWrapper";
+import { Role } from "@prisma/client";
 
 // ...existing code...
 
@@ -23,7 +25,7 @@ async function updateUser(formData: FormData) {
     data: {
       name,
       email,
-      role: role as any, // If you have a Role enum, cast or import it here
+      role: role as Role, // Use Role enum for type safety
     },
   });
 }

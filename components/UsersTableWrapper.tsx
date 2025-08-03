@@ -17,7 +17,7 @@ export default function UsersTableWrapper({ users, updateUser, deleteUser }: {
   updateUser: (formData: FormData) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [localUsers, setLocalUsers] = React.useState(users);
 
   React.useEffect(() => {

@@ -43,6 +43,8 @@ export function NavBar() {
     let profileIcon  = <LogInIcon />;
     let showDashboard = false;
     let dashboardHref = "/system/dashboard";
+    let showAgentProperties = false;
+    let agentPropertiesHref = "/agent/properties";
     if (session?.user) {
         switch (session.user.role) {
             case "USER":
@@ -54,6 +56,8 @@ export function NavBar() {
                 profileHref  = appUrls.agentProfile;
                 profileLabel = "Agent Profile";
                 profileIcon  = <User2 />;
+                showAgentProperties = true;
+                agentPropertiesHref = "/agent/properties";
                 break;
             case "ADMIN":
                 profileHref  = "/user/profile";
@@ -100,6 +104,15 @@ export function NavBar() {
                             >
                                 <SettingsIcon />
                                 <span>Dashboard</span>
+                            </Link>
+                        )}
+                        {showAgentProperties && (
+                            <Link
+                                href={agentPropertiesHref}
+                                className="flex items-center gap-2 px-3 py-2 rounded bg-primary text-white shadow-xs hover:bg-primary/90 transition-colors"
+                            >
+                                <HomeIcon />
+                                <span>My Properties</span>
                             </Link>
                         )}
                         <Link

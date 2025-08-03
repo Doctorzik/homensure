@@ -45,7 +45,7 @@ export default function Edit({ user, sessionEmail }: EditProps) {
                 const params = new URLSearchParams(window.location.search);
                 params.delete("success");
                 router.replace(
-                    `/agent/profile${params.toString() ? "?" + params.toString() : ""}`
+                    `/user/agent/profile${params.toString() ? "?" + params.toString() : ""}`
                 );
             }, 5000);
             return () => clearTimeout(timeout);
@@ -77,11 +77,11 @@ export default function Edit({ user, sessionEmail }: EditProps) {
                             const params = new URLSearchParams(window.location.search);
                             params.delete("success");
                             router.replace(
-                                `/agent/profile${params.toString() ? "?" + params.toString() : ""}`
+                                `/user/agent/profile${params.toString() ? "?" + params.toString() : ""}`
                             );
                         }}
                     >
-                        ×
+                        7
                     </button>
                 </div>
             )}
@@ -98,34 +98,3 @@ export default function Edit({ user, sessionEmail }: EditProps) {
                         : user.role === "ADMIN"
                         ? "inline-block mb-2 px-3 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold"
                         : "inline-block mb-2 px-3 py-1 rounded bg-gray-100 text-gray-700 text-xs font-semibold"
-                    }
-                  >
-                    {user.role}
-                  </span>
-                </div>
-                <DisplayItem label="Full Name" value={user.agent.fullName} />
-                <DisplayItem label="Phone"     value={user.agent.phone} />
-                <DisplayItem
-                    label="Date of Birth"
-                    value={new Date(user.agent.dateOfBirth).toLocaleDateString()}
-                />
-                <DisplayItem label="Gender"    value={user.agent.gender} />
-                <DisplayItem label="Address"   value={user.agent.address} />
-                <DisplayItem label="Locality"  value={user.agent.locality} />
-                <DisplayItem
-                    label="National ID"
-                    value={user.agent.nationalId ?? "-"}
-                />
-                <DisplayItem label="ID Type"   value={user.agent.idType ?? "-"} />
-                <DisplayItem
-                    label="Joined At"
-                    value={new Date(user.agent.joinedAt).toLocaleString()}
-                />
-            </div>
-
-            <Button onClick={() => setEditing(true)} className="text-white">
-                Edit
-            </Button>
-        </div>
-    );
-}
