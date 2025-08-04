@@ -11,12 +11,12 @@ export const propertyTypeEnum = z.enum([
 export type PropertyType = z.infer<typeof propertyTypeEnum>;
 
 export const amenitySchema = z.object({
-	id: z.string().cuid().optional(),
+	id: z.cuid().optional(),
 	name: z.string().trim().min(1, "Amenity name is required"),
 });
 
 export const reviewSchema = z.object({
-	id: z.string().cuid().optional(),
+	id: z.cuid().optional(),
 	rating: z.number().min(1).max(5).default(5),
 	comment: z.string().optional(),
 	createdAt: z.date().optional(),
@@ -67,7 +67,7 @@ export const agentApplicationSchema = z.object({
 });
 
 export const propertySchema = z.object({
-	id: z.string().cuid().optional(),
+	id: z.cuid().optional(),
 	title: z.string().min(3, "Title is required"),
 	slug: z.string().min(3, "Slug is required"),
 	description: z.string().min(10, "Description is required"),
@@ -117,11 +117,14 @@ export const propertySchema = z.object({
 	address: z.string().min(5),
 	latitude: z.number().optional(),
 	longitude: z.number().optional(),
+	listingDuration: z
+		.number()
+		.min(30, "The minimal number of days is 30 for a listing"),
 
 	listedAt: z.date().optional(),
 	updatedAt: z.date().optional(),
 
-	agentId: z.string().cuid("Invalid agent ID"),
+	agentId: z.cuid("Invalid agent ID"),
 });
 
 export const searchSchema = z.object({

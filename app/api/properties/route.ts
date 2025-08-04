@@ -65,7 +65,6 @@ export async function GET(req: NextRequest) {
 			},
 			include: {
 				agent: true,
-				amenities: true,
 				reviews: true,
 			},
 		});

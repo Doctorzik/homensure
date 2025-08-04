@@ -1,8 +1,8 @@
+"use server";
 import { revalidatePath } from "next/cache";
 import { auth } from "../auth";
 import { prisma } from "../db/prisma";
 import { getUser } from "./auth-action";
-
 
 export async function isAdmin(email: string) {
 	const user = await prisma.user.findUnique({
