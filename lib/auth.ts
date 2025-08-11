@@ -1,3 +1,5 @@
+// File: lib/auth.tsx
+
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -79,70 +81,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 	callbacks: {
 		async jwt({ token, user }) {
 			if (user) {
-				// On first login
-				const dbUser = await prisma.user.findUnique({
-					where: { email: user.email! },
-				});
-
-				token.email = user.email;
-				token.name = user.name;
-				token.picture = user.image;
+				const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+				token.id = dbUser?.id;
+				token.email = dbUser?.email;
+				token.name = dbUser?.name;
+				token.picture = dbUser?.image;
 				token.role = dbUser?.role;
 			}
 			return token;
 		},
 		async session({ session, token }) {
 			if (session.user) {
+				session.user.id = token.id as string;
+				session.user.email = token.email as string;
 				session.user.name = token.name as string;
 				session.user.image = token.picture as string;
-				session.user.email = token.email as string;
 				session.user.role = token.role as string;
 			}
-
 			return session;
 		},
 	},
-	// callbacks: {
-	// 	async session({ session, token }) {
-	// 		// Add custom user info from token to session
 
-	// 		return session;
-	// 	},
-
-	// async signIn({ user, account, profile, email, credentials }) {
-	// 	// Check if account is OAuth and not linked yet
-
-	// 	if (account?.provider === "github") {
-	// 		const existingUser = await prisma.user.findUnique({
-	// 			where: { email: user.email },
-	// 			include: { accounts: true },
-	// 		});
-
-	// 		if (!existingUser) {
-	// 			throw new Error("No existing user");
-	// 		} else {
-	// 			// if the account is not already linked
-
-	// 			const alreadLinked = existingUser.accounts.some(
-	// 				(a) => (a.provider = "github")
-	// 			);
-	// 			if (!alreadLinked && existingUser) {
-	// 				await prisma.account.create({
-	// 					data: {
-	// 						userId: existingUser.id,
-	// 						provider: account.provider,
-	// 						type: account.type,
-	// 						providerAccountId: account.providerAccountId,
-	// 						access_token: account.access_token,
-	// 					},
-	// 				});
-	// 				return true;
-	// 			}
-	// 		}
-	// 	}
-	// 	return true;
-	// },
-	// },
 	jwt: {
 		encode: async function (params) {
 			if (params.token?.credentials) {

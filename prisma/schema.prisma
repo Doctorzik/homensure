@@ -23,7 +23,6 @@ model User {
   Authenticator    Authenticator[]
   sessions         Session[]
   AgentApplication AgentApplication?
-
   comments         Comment[]
   Review           Review[]
   stripeCustomerId String?
@@ -111,7 +110,7 @@ enum ApplicationStatus {
 
 model AgentApplication {
   id                  String            @id @default(cuid())
-  userId              String            @unique
+  userId              String
   firstName           String
   lastName            String
   phone               Int

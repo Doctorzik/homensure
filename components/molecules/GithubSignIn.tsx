@@ -12,7 +12,7 @@ function GithubSignIn() {
     <form action={async () => {
       "use server"
 
-      await signIn("github", { redirectTo: "/properties" })
+      await signIn("github", { redirectTo: "/" })
     }}>
 
       <Button variant={'outline'}>
