@@ -1,23 +1,10 @@
 "use client";
 
+import { allPropertiesByAgent, deleteProperty } from "@/lib/actions/agent-actions";
 import { useEffect, useState } from "react";
+import {  Property } from "@/lib/schemas/userSchema"
 // Define the columns based on the Property model
 
-type Property = {
-  id: string;
-  title: string;
-  slug: string;
-  propertyType: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: number;
-  price: number;
-  furnished: boolean;
-  available: boolean;
-  published: boolean;
-  listedAt: string | Date;
-  updatedAt: string | Date;
-};
 
 const columns = [
   { key: "title", label: "Title" },
@@ -33,21 +20,23 @@ const columns = [
   { key: "updatedAt", label: "Updated At" },
   { key: "actions", label: "Actions" },
 ];
-
+type property = Property[]
 export default function AgentPropertiesPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<property | [] >([]);
   const [loading, setLoading] = useState(true);
   // Removed editing state after switching to a dedicated edit page
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
+
     async function fetchProperties() {
-      setLoading(true);
-      const res = await fetch("/api/properties?mine=true");
-      if (res.ok) {
-        const data = await res.json();
-        setProperties(data.properties || []);
+      const properties = await allPropertiesByAgent()
+      
+      if (!properties) {
+        return
       }
+      setLoading(true);
+      setProperties(properties);
       setLoading(false);
     }
     fetchProperties();
@@ -56,17 +45,18 @@ export default function AgentPropertiesPage() {
   // Removed unused edit-related functions after switching to a dedicated edit page
 
   function openDeleteConfirm(property: Property) {
-    setDeleteConfirm({ id: property.id, title: property.title });
+    setDeleteConfirm({ id: property.id!, title: property.title });
   }
 
   async function confirmDelete() {
     if (!deleteConfirm) return;
-    try {
-      const res = await fetch(`/api/properties/${deleteConfirm.id}`, { method: "DELETE" });
-      if (res.ok || res.status === 204) {
+    
+      const result = await deleteProperty(deleteConfirm.id)
+      if ( result.id) {
+       
         setProperties((prev) => prev.filter((p) => p.id !== deleteConfirm.id));
       }
-    } catch {}
+  
     setDeleteConfirm(null);
   }
 
@@ -135,7 +125,7 @@ export default function AgentPropertiesPage() {
                     ) : (
                       <td key={col.key} className={`border px-2 py-1 ${rightAlign ? 'text-right' : 'text-center'}`}>
                         {col.key === 'listedAt' || col.key === 'updatedAt' ? (
-                          property[col.key] ? new Date(property[col.key] as string).toLocaleDateString() : ""
+                          property[col.key] ? new Date(property[col.key]!).toLocaleDateString() : ""
                         ) : col.key === 'furnished' ? (
                           <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${property.furnished ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
                             {property.furnished ? 'Furnished' : 'Unfurnished'}

@@ -42,6 +42,7 @@ export const config = {
         '/user/agent/properties/:path*',
         '/system/:path*',
         '/user/profile/:path*',
-        '/user/agent/apply/:path*'
+        '/user/agent/apply/:path*',
+        '/user/application:path*'
     ]
 };

@@ -12,7 +12,7 @@ export default async function PropertiesPage() {
 
 
   const session = await auth();
-  { session?.user?.name }
+
   if (!session) {
     redirect("/login")
 

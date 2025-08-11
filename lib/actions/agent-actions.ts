@@ -1,7 +1,8 @@
+"use server";
+
 import { auth } from "@/lib/auth";
 import {
 	agentApplicationSchema,
-	amenitySchema,
 	propertySchema,
 } from "@/lib/schemas/userSchema";
 import z from "zod";
@@ -24,11 +25,26 @@ export async function createAgentApplication(
 
 	// Validate the agent application schema
 	const validateData = agentApplicationSchema.parse(data);
+
 	if (!validateData) return new Error("Invalid form Data");
 
 	const user = await getUser(session.user?.email as string);
 	if (!user) return new Error("No user found");
+	const getapplication = await prisma.agentApplication.findUnique({
+		where: {
+			userId: user.id,
+		},
 
+		select: {
+			id: true,
+		},
+	});
+	if (getapplication) {
+		return {
+			success: true,
+			message: "You already submitted an application...",
+		};
+	}
 	// create a mutation
 	const application = await prisma.agentApplication.create({
 		data: {
@@ -40,9 +56,8 @@ export async function createAgentApplication(
 			lastName: validateData.lastName,
 			motivation: validateData.motivation,
 			nationalIdNumber: validateData.nationalIdNumber,
-			phone: validateData.phoneNumber,
+			phone: validateData.phoneNumber.toString(),
 			proofOfIdentityType: validateData.proofOfIdentityFile,
-			proofOfIdentityUrl: validateData.proofOfIdentityFile,
 			videoUrl: validateData.videoUrl,
 			experience: validateData.experience,
 			userId: user.id as string,
@@ -82,17 +97,20 @@ export async function createProperty(
 			email: true,
 			stripeCustomerId: true,
 			agent: {
-				select: { id: true, fullName: true },
+				select: {
+					id: true,
+					user: {
+						select: { name: true },
+					},
+				},
 			},
 		},
 	});
 	if (!agentInfo) redirect("/");
-
 	let agentStripeId = agentInfo.stripeCustomerId;
 	if (!agentStripeId) {
 		const customer = await stripe.customers.create({
 			email: agentInfo.email,
-			name: agentInfo.agent?.fullName,
 		});
 		agentStripeId = customer.id;
 		await prisma.user.update({
@@ -104,7 +122,8 @@ export async function createProperty(
 	const property = await prisma.property.create({
 		data: {
 			...validated,
-			listDuration: validated.listingDuration,
+			listingDuration: validated.listingDuration,
+			agentId: agentInfo.agent?.id as string,
 		},
 		select: { id: true },
 	});
@@ -133,8 +152,8 @@ export async function createProperty(
 		metadata: {
 			propertyId: property.id,
 		},
-		success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
-		cancel_url: `${process.env.NEXT_PUBLIC_URL}/cancel`,
+		success_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/success`,
+		cancel_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/cancel`,
 		mode: "payment",
 	});
 
@@ -143,7 +162,6 @@ export async function createProperty(
 
 	redirect(stripeSession.url);
 }
-
 
 export async function editProperty(data: z.infer<typeof propertySchema>) {
 	const session = await auth();
@@ -185,7 +203,6 @@ export async function editProperty(data: z.infer<typeof propertySchema>) {
 	return updatedProperty;
 }
 
-
 export async function allPropertiesByAgent() {
 	const session = await auth();
 	if (!session?.user) {
@@ -206,8 +223,9 @@ export async function allPropertiesByAgent() {
 	});
 
 	if (properties.length === 0) {
-		throw new Error("No properties found for this agent");
+		return [];
 	}
+
 	return properties;
 }
 export async function getSingleAgentProperty(id: string) {
@@ -259,7 +277,10 @@ export async function deleteProperty(id: string) {
 		where: {
 			id: id,
 		},
+		select: {
+			id: true,
+		},
 	});
 
-	return "Property deleted successfully";
+	return deletedProperty;
 }

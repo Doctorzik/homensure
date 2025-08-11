@@ -35,7 +35,7 @@ export const userSchema = z.object({
 export const agentApplicationSchema = z.object({
 	firstName: z.string().min(3, "Full name must be at least 3 characters"),
 	lastName: z.string().min(3, "Full name must be at least 3 characters"),
-	phoneNumber: z.number().min(11, "Phone number must be valid"),
+	phoneNumber: z.number("Please include a number"),
 	dateOfBirth: z.string().refine((val) => !isNaN(Date.parse(val)), {
 		message: "Invalid date format",
 	}),
@@ -56,7 +56,9 @@ export const agentApplicationSchema = z.object({
 			{
 				message: "File must be JPG, PNG, or PDF",
 			}
-		),
+		)
+		.optional(),
+
 	address: z.string().min(5, "Address is required"),
 	desiredLocality: z.string().min(3, "Locality is required"),
 	experience: z.number().optional(),
@@ -72,17 +74,7 @@ export const propertySchema = z.object({
 	slug: z.string().min(3, "Slug is required"),
 	description: z.string().min(10, "Description is required"),
 
-	images: z
-		.array(
-			z
-				.string()
-				.url()
-				.refine((url) => /\.(jpe?g|png|webp|svg)$/i.test(url), {
-					message: "Must be a valid image URL",
-				})
-		)
-		.min(1)
-		.max(10),
+	images: z.array(z.string()).min(1).max(10),
 
 	videos: z
 		.array(
@@ -101,7 +93,7 @@ export const propertySchema = z.object({
 	bathrooms: z.number().int().min(0),
 	area: z.number().positive("Area must be greater than 0"),
 
-	amenities: z.array(amenitySchema).optional(), // many-to-many relationship
+	// amenities: z.array(amenitySchema).optional(), // many-to-many relationship
 	tags: z.array(z.string().min(1)).optional(),
 
 	price: z.number().positive("Price must be greater than 0"),
@@ -115,18 +107,17 @@ export const propertySchema = z.object({
 	state: z.string().min(2),
 	country: z.string().min(2),
 	address: z.string().min(5),
-	latitude: z.number().optional(),
-	longitude: z.number().optional(),
+	latitude: z.number().nullable().optional(),
+	longitude: z.number().nullable().optional(),
 	listingDuration: z
 		.number()
 		.min(30, "The minimal number of days is 30 for a listing"),
 
 	listedAt: z.date().optional(),
 	updatedAt: z.date().optional(),
-
-	agentId: z.cuid("Invalid agent ID"),
 });
 
+export type Property = z.infer<typeof propertySchema>;
 export const searchSchema = z.object({
 	city: z.string().optional(),
 	state: z.string().optional(),

@@ -83,7 +83,7 @@ model Agent {
   userId      String   @unique
   fullName    String
   phone       String
-  dateOfBirth DateTime
+  dateOfBirth String
   gender      Gender
   address     String
   locality    String // approved area of operation
@@ -110,15 +110,14 @@ enum ApplicationStatus {
 
 model AgentApplication {
   id                  String            @id @default(cuid())
-  userId              String
+  userId              String            @unique
   firstName           String
   lastName            String
-  phone               Int
-  dateOfBirth         DateTime
+  phone               String
+  dateOfBirth         String
   gender              Gender
   nationalIdNumber    String
-  proofOfIdentityUrl  String // e.g. uploaded ID file
-  proofOfIdentityType String // e.g. "pdf", "jpg"
+  proofOfIdentityType String? // e.g. "pdf", "jpg"
   address             String
   videoUrl            String
   desiredLocality     String // Where agent wants to operate
@@ -158,7 +157,7 @@ model Property {
   isFeatured   Boolean        @default(false)
   published    Boolean        @default(false)
   views        Int            @default(0)
-  listDuration Int
+  listingDuration Int
 
   city      String
   state     String

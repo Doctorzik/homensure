@@ -1,8 +1,9 @@
 "use server";
-import { revalidatePath } from "next/cache";
+
 import { auth } from "../auth";
 import { prisma } from "../db/prisma";
 import { getUser } from "./auth-action";
+
 
 export async function isAdmin(email: string) {
 	const user = await prisma.user.findUnique({
@@ -42,19 +43,23 @@ export async function getAllApplications() {
 	}
 
 	const applications = await prisma.agentApplication.findMany({
+		where: {
+			status: "PENDING",
+		},
 		include: {
 			user: {
-				select: {
-					image: true,
-					name: true,
-					id: true,
-					email: true,
+				omit: {
+					password: true,
+					stripeCustomerId: true,
 				},
 			},
 		},
 		omit: {
 			interviewDate: true,
 			reviewerNote: true,
+		},
+		orderBy: {
+			appliedAt: "desc",
 		},
 	});
 
@@ -68,27 +73,67 @@ export async function getAllApplications() {
 export async function approveAgent(agentApplicationId: string) {
 	// get a single application approve, then update the role to agent.
 
-	const agent = await prisma.user.update({
+	const application = await prisma.agentApplication.findUnique({
 		where: {
 			id: agentApplicationId,
 		},
+	});
+
+	if (!application)
+		return { success: false, message: "This application was not found" };
+
+	const agent = await prisma.agent.create({
 		data: {
-			role: "AGENT",
-			AgentApplication: {
-				update: {
-					status: {
-						set: "APPROVED",
-					},
+			address: application.address,
+			dateOfBirth: application.dateOfBirth.toString(),
+			fullName: application.firstName + " " + application.lastName,
+			gender: application.gender,
+			locality: application.gender,
+			phone: application.phone,
+			id: application.id,
+			nationalId: application.nationalIdNumber,
+			userId: application.userId,
+		},
+		select: {
+			user: {
+				select: {
+					id: true,
 				},
 			},
 		},
 	});
 
-	if (!agent) {
-		throw new Error("NO USER WITH SUCH AGENT APPLICATION");
-	}
+	if (!agent)
+		return {
+			success: false,
+			messsage: "Something happened while creating agent",
+		};
 
-	revalidatePath("/system/agentapplications");
+	const updateUserRole = await prisma.user.update({
+		where: {
+			id: agent.user.id,
+		},
+		data: {
+			role: "AGENT",
+			AgentApplication: {
+				update: {
+					status: "APPROVED",
+				},
+			},
+		},
+		select: {
+			id: true,
+		},
+	});
+
+
+	if (updateUserRole)
+		return {
+			success: true,
+			message: "User Successfully approved to Agent",
+		};
+
+	//  revalidatePath("/system/agentapplications");
 }
 
 export async function getSingleApplication(applicationId: string) {

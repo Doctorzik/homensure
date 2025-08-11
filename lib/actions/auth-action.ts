@@ -25,7 +25,7 @@ export async function createUser(formData: FormData) {
 		});
 
 		if (validateCredentials.success) {
-			const { email, password, name } = validateCredentials.data;
+			const { email, password } = validateCredentials.data;
 
 			// Hash the password
 			const harshedPassword = bcrypt.hashSync(password, saltRounds);
@@ -35,7 +35,6 @@ export async function createUser(formData: FormData) {
 				data: {
 					email: email,
 					password: harshedPassword,
-					name: name,
 				},
 			});
 			if (!user) {
@@ -43,7 +42,7 @@ export async function createUser(formData: FormData) {
 			}
 			// route the user to login in page
 
-			// redirect("/login");
+			return true;
 		}
 	} catch (error) {
 		return error;
@@ -74,5 +73,3 @@ export async function getUser(userEmail: string) {
 		return user;
 	}
 }
-
-
