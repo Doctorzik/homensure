@@ -1,13 +1,40 @@
 "use client";
 import React, { useState, useTransition } from "react";
 
-export default function PendingApplicationsTable({ initialPendingApps, approveApplication, rejectApplication }) {
+type PendingApp = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  user?: { email?: string };
+  phone: string;
+  dateOfBirth: string | Date;
+  gender: string;
+  nationalIdNumber: string;
+  proofOfIdentityUrl: string;
+  proofOfIdentityType?: string;
+  address: string;
+  videoUrl: string;
+  desiredLocality: string;
+  experience?: number;
+  motivation: string;
+  pastRoles?: string;
+  appliedAt: string | Date;
+  status: string;
+};
+
+interface PendingApplicationsTableProps {
+  initialPendingApps: PendingApp[];
+  approveApplication: (id: string) => Promise<void>;
+  rejectApplication: (id: string) => Promise<void>;
+}
+
+export default function PendingApplicationsTable({ initialPendingApps, approveApplication, rejectApplication }: PendingApplicationsTableProps) {
   const [pendingApps, setPendingApps] = useState(initialPendingApps);
   const [isPending, startTransition] = useTransition();
 
-  async function handleAction(id, action) {
+  async function handleAction(id: string, action: "approve" | "reject") {
     // Optimistically remove the application from the table
-    setPendingApps(prev => prev.filter(app => app.id !== id));
+    setPendingApps((prev: PendingApp[]) => prev.filter((app: PendingApp) => app.id !== id));
     startTransition(async () => {
       if (action === "approve") {
         await approveApplication(id);

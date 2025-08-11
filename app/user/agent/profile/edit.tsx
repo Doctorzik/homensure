@@ -8,6 +8,8 @@ import {
 
 // Define a type for the user prop with agent info
 type UserWithAgent = {
+  name?: string;
+  email?: string;
   role: "USER" | "AGENT" | "ADMIN" | string;
   agent: {
     fullName: string;

@@ -44,7 +44,7 @@ export default function ApplyAgentPage() {
 		const uploadJson = await uploadRes.json();
 		proofOfIdentityUrl = uploadJson.url;
 		proofOfIdentityType = file.name.split(".").pop()?.toLowerCase() || "";
-		} catch (err) {
+		} catch {
 		setError("Failed to upload proof of identity file.");
 		setLoading(false);
 		return;
@@ -88,20 +88,16 @@ export default function ApplyAgentPage() {
 
 		<form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
 			<div>
-			<label className="block font-medium">First Name *</label>
-			<Input name="firstName" required />
+			<Input name="firstName" required label="First Name *" />
 			</div>
 			<div>
-			<label className="block font-medium">Last Name *</label>
-			<Input name="lastName" required />
+			<Input name="lastName" required label="Last Name *" />
 			</div>
 			<div>
-			<label className="block font-medium">Phone *</label>
-			<Input name="phone" type="tel" required />
+			<Input name="phone" type="tel" required label="Phone *" />
 			</div>
 			<div>
-			<label className="block font-medium">Date of Birth *</label>
-			<Input name="dateOfBirth" type="date" required />
+			<Input name="dateOfBirth" type="date" required label="Date of Birth *" />
 			</div>
 			<div>
 			<label className="block font-medium">Gender *</label>
@@ -112,42 +108,37 @@ export default function ApplyAgentPage() {
 			</select>
 			</div>
 			<div>
-			<label className="block font-medium">National ID Number *</label>
-			<Input name="nationalIdNumber" required />
+			<Input name="nationalIdNumber" required label="National ID Number *" />
 			</div>
 			<div>
 			<label className="block font-medium">Proof of Identity (PDF/JPG) *</label>
-			<Input
+			<input
 				name="proofOfIdentity"
 				type="file"
 				accept=".pdf,.jpg,.jpeg,.png"
 				required
 				ref={fileInputRef}
+				className="w-full border rounded px-2 py-1"
 			/>
 			</div>
 			<div>
-			<label className="block font-medium">Address *</label>
-			<Input name="address" required />
+			<Input name="address" required label="Address *" />
 			</div>
 			<div>
-			<label className="block font-medium">Video Introduction URL *</label>
-			<Input name="videoUrl" type="url" required />
+			<Input name="videoUrl" type="url" required label="Video Introduction URL *" />
 			</div>
 			<div>
-			<label className="block font-medium">Desired Locality *</label>
-			<Input name="desiredLocality" required />
+			<Input name="desiredLocality" required label="Desired Locality *" />
 			</div>
 			<div>
-			<label className="block font-medium">Experience (years) *</label>
-			<Input name="experience" type="number" min={0} required />
+			<Input name="experience" type="number" min={0} required label="Experience (years) *" />
 			</div>
 			<div>
 			<label className="block font-medium">Motivation *</label>
 			<textarea name="motivation" required className="w-full border rounded px-2 py-1" />
 			</div>
 			<div>
-			<label className="block font-medium">Past Roles (optional)</label>
-			<Input name="pastRoles" />
+			<Input name="pastRoles" label="Past Roles (optional)" />
 			</div>
 
 			{/* Show duplicate application error above the button */}

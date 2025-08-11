@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
 import Edit from "./edit";
 import { Gender } from '@prisma/client';
-import Link from 'next/link'; // Import the Link component
 
 export default async function AgentProfilePage() {
     // 1) Ensure signed in
@@ -63,6 +62,8 @@ export default async function AgentProfilePage() {
     // 5) Serialize dates with null checks
     const safeUser = {
         ...user,
+        name: user.name ?? '',
+        email: user.email ?? '',
         createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
         updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
         emailVerified: user.emailVerified?.toISOString() ?? null,

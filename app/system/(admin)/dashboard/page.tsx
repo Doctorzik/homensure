@@ -1,23 +1,22 @@
 
 
-import React from "react";
+import React, { ReactElement } from "react";
 import UsersTableWrapper from "@/components/UsersTableWrapper";
 import PendingApplicationsTable from "./PendingApplicationsTable";
 import { Role } from "@prisma/client";
 
 // ...existing code...
 
-async function rejectApplication(id: string) {
+async function rejectApplication(id: string): Promise<void> {
   "use server";
   await prisma.agentApplication.update({
     where: { id },
     data: { status: "REJECTED" },
   });
-  // Refresh page after action
-  return { redirect: "/system/(admin)/dashboard" };
+  // Optionally trigger a refresh if needed (handled by client)
 }
 
-async function updateUser(formData: FormData) {
+async function updateUser(formData: FormData): Promise<void> {
   "use server";
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
@@ -33,17 +32,24 @@ async function updateUser(formData: FormData) {
   });
 }
 
-async function deleteUser(id: string) {
+async function deleteUser(id: string): Promise<void> {
   "use server";
   await prisma.user.delete({ where: { id } });
 }
 
-export default async function AdminDashboard() {
-  const pendingApps = await prisma.agentApplication.findMany({
+export default async function AdminDashboard(): Promise<ReactElement> {
+  const pendingAppsRaw = await prisma.agentApplication.findMany({
     where: { status: "PENDING" },
     include: { user: true },
     orderBy: { appliedAt: "desc" },
   });
+  // Ensure phone is string for PendingApp compatibility
+  const pendingApps = pendingAppsRaw.map(app => ({
+    ...app,
+    phone: String(app.phone),
+    experience: app.experience === null ? undefined : app.experience,
+    pastRoles: app.pastRoles === null ? undefined : app.pastRoles,
+  }));
   const usersRaw = await prisma.user.findMany({ orderBy: { name: "asc" } });
   const users = usersRaw.map(u => ({
     id: u.id,
@@ -81,7 +87,7 @@ export default async function AdminDashboard() {
 import { prisma } from "@/lib/db/prisma";
 
 
-export async function approveApplication(id: string) {
+export async function approveApplication(id: string): Promise<void> {
   "use server";
   // 1. Mark application as approved
   const application = await prisma.agentApplication.update({
@@ -112,6 +118,5 @@ export async function approveApplication(id: string) {
       }
     });
   }
-  // Refresh page after action
-  return { redirect: "/system/(admin)/dashboard" };
+  // Optionally trigger a refresh if needed (handled by client)
 }
