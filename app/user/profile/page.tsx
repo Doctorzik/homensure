@@ -155,7 +155,7 @@ export default function UserProfilePage() {
                         </div>
                     ) : (
                         <Button
-                            onClick={() => router.push("/agent/apply")}
+                            onClick={() => router.push("/user/agent/apply")}
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >
                             Apply

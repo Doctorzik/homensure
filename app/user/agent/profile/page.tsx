@@ -79,12 +79,6 @@ export default async function AgentProfilePage() {
             <Edit
                 user={safeUser}
             />
-            {/* Add the "Apply to Become an Agent" button */}
-            {!agent && (
-                <Link href="/agent/apply">
-                    <button>Apply to Become an Agent</button>
-                </Link>
-            )}
         </div>
     );
 }
