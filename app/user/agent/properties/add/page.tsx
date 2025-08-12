@@ -105,7 +105,7 @@ export default function AddPropertyPage() {
         body: JSON.stringify({ ...form, agentId }),
       });
       if (res.ok) {
-        router.push("user/agent/properties");
+        router.push("/user/agent/properties");
       } else {
         setSubmitting(false);
         alert("Failed to add property. Please try again.");
