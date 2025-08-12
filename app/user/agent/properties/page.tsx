@@ -2,7 +2,7 @@
 
 import { allPropertiesByAgent, deleteProperty } from "@/lib/actions/agent-actions";
 import { useEffect, useState } from "react";
-import {  Property } from "@/lib/schemas/userSchema"
+import { Property } from "@/lib/schemas/userSchema"
 // Define the columns based on the Property model
 
 
@@ -19,10 +19,11 @@ const columns = [
   { key: "listedAt", label: "Listed At" },
   { key: "updatedAt", label: "Updated At" },
   { key: "actions", label: "Actions" },
+  { key: "status", label: "Status" }
 ];
 type property = Property[]
 export default function AgentPropertiesPage() {
-  const [properties, setProperties] = useState<property | [] >([]);
+  const [properties, setProperties] = useState<property | []>([]);
   const [loading, setLoading] = useState(true);
   // Removed editing state after switching to a dedicated edit page
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
@@ -31,7 +32,7 @@ export default function AgentPropertiesPage() {
 
     async function fetchProperties() {
       const properties = await allPropertiesByAgent()
-      
+
       if (!properties) {
         return
       }
@@ -50,13 +51,13 @@ export default function AgentPropertiesPage() {
 
   async function confirmDelete() {
     if (!deleteConfirm) return;
-    
-      const result = await deleteProperty(deleteConfirm.id)
-      if ( result.id) {
-       
-        setProperties((prev) => prev.filter((p) => p.id !== deleteConfirm.id));
-      }
-  
+
+    const result = await deleteProperty(deleteConfirm.id)
+    if (result.id) {
+
+      setProperties((prev) => prev.filter((p) => p.id !== deleteConfirm.id));
+    }
+
     setDeleteConfirm(null);
   }
 

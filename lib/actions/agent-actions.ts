@@ -110,6 +110,7 @@ export async function createProperty(
 	let agentStripeId = agentInfo.stripeCustomerId;
 	if (!agentStripeId) {
 		const customer = await stripe.customers.create({
+			name: agentInfo.agent?.user.name as string,
 			email: agentInfo.email,
 		});
 		agentStripeId = customer.id;
@@ -283,4 +284,25 @@ export async function deleteProperty(id: string) {
 	});
 
 	return deletedProperty;
+}
+
+export async function getAllProperties() {
+	try {
+		const properties = await prisma.property.findMany({
+			where: {
+				status: "ACTIVE",
+			},
+			include: {
+				agent: true,
+			},
+			orderBy: {
+				listedAt: "desc",
+			},
+		});
+
+		return properties;
+	} catch  {
+		console.error("Error fetching properties:",);
+		throw new Error("Failed to fetch properties");
+	}
 }

@@ -25,7 +25,7 @@ model User {
   AgentApplication AgentApplication?
   comments         Comment[]
   Review           Review[]
-  stripeCustomerId String?
+  stripeCustomerId String?           @unique
 }
 
 model Account {
@@ -139,24 +139,24 @@ enum PropertyStatus {
 }
 
 model Property {
-  id           String         @id @default(cuid())
-  title        String
-  slug         String         @unique
-  description  String
-  images       String[]
-  videos       String[]
-  propertyType PropertyType
-  bedrooms     Int
-  bathrooms    Int
-  area         Float
-  tags         String[]
-  price        Float
-  status       PropertyStatus @default(DRAFT)
-  furnished    Boolean        @default(false)
-  available    Boolean        @default(true)
-  isFeatured   Boolean        @default(false)
-  published    Boolean        @default(false)
-  views        Int            @default(0)
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  description     String
+  images          String[]
+  videos          String[]
+  propertyType    PropertyType
+  bedrooms        Int
+  bathrooms       Int
+  area            Float
+  tags            String[]
+  price           Float
+  status          PropertyStatus @default(DRAFT)
+  furnished       Boolean        @default(false)
+  available       Boolean        @default(true)
+  isFeatured      Boolean        @default(false)
+  published       Boolean        @default(false)
+  views           Int            @default(0)
   listingDuration Int
 
   city      String
