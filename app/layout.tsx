@@ -15,11 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <SpeedInsights />
-      <Analytics />
+
       <head />
 
       <body>
+        <SpeedInsights />
+        <Analytics />
         <SessionProvider >
           <NavBar />
         </SessionProvider>
