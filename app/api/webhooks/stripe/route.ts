@@ -4,10 +4,10 @@ import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 
-export async function Post(req: Request) {
+export async function POST(req: Request) {
 	// get the body of the request object
 	const body = await req.text();
-	console.log(body);
+
 
 	// get the headerslist fron the headers
 	const headerList = await headers();

@@ -57,6 +57,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 							email: email,
 						},
 					});
+
+				
 					if (!user || user.password === null) {
 						throw new Error("User not found");
 					}

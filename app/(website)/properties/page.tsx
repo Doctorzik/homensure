@@ -27,26 +27,7 @@ export default async function PropertiesPage() {
 
   // TODO: replace this stub with real data fetching
 
-  const properties = [
-    {
-      slug: 'modern-downtown-flat',
-      name: 'Modern Downtown Flat',
-      description: 'A sleek 2-bedroom apartment in the heart of the city.',
-      datePosted: '2025-07-10',
-      price: 1800,
-      reviews: [4, 5, 5, 3],
-      agent: { name: 'Jane Doe', contact: 'jane.doe@example.com' },
-    },
-    {
-      slug: 'cozy-suburban-home',
-      name: 'Cozy Suburban Home',
-      description: 'A charming 3-bed house with front and back yard.',
-      datePosted: '2025-07-05',
-      price: 2200,
-      reviews: [5, 5, 4],
-      agent: { name: 'John Smith', contact: 'john.smith@example.com' },
-    },
-  ];
+
 
   return (
     <>

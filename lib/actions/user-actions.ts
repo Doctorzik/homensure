@@ -76,9 +76,9 @@ export async function getUser(): Promise<UserResult> {
 				data: user,
 			};
 		}
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	} catch (error) {
-		console.error(error)
+
+	} catch  {
+		
 		return {
 			status: "error",
 			message: "Something went wrong",
