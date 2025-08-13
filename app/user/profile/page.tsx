@@ -1,168 +1,35 @@
-// File: app/(user)/user/profile/page.tsx
+
+import UserProfile from "@/components/molecules/UserProfile";
+import { getUser } from "@/lib/actions/user-actions";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 
 
 
-"use client";
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { EditableProfileForm, DisplayItem } from "./form";
+export default async function UserProfilePage() {
+    const session = await auth()
+    if (session?.user.role !== "USER") return redirect("/unauthorised")
 
-type Agent = {
-    fullName: string;
-    phone: string;
-    dateOfBirth: string;
-    // Add other agent fields as needed
-};
-type User = {
-    name: string;
-    email: string;
-    role: string;
-    agent?: Agent;
-};
+    const result = await getUser()
 
-export default function UserProfilePage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [hasPendingApplication, setHasPendingApplication] = useState(false);
-    const [editing, setEditing] = useState(false);
-    const searchParams = useSearchParams();
-    const router = useRouter();
-
-    // Success message state
-    const [showSuccess, setShowSuccess] = useState(
-        searchParams.get("success") === "1" ||
-        searchParams.get("success") === "agent-application"
-    );
-
-    useEffect(() => {
-        // Fetch user data on the client side
-        const fetchUser = async () => {
-            const response = await fetch("/api/user/profile");
-            if (response.ok) {
-                const data = await response.json();
-                setUser(data.user);
-                setHasPendingApplication(!!data.hasPendingApplication);
-            } else {
-                router.push("/");
-            }
-        };
-
-        fetchUser();
-    }, [router]);
-
-    useEffect(() => {
-        if (showSuccess) {
-            const timeout = setTimeout(() => {
-                setShowSuccess(false);
-                const params = new URLSearchParams(window.location.search);
-                params.delete("success");
-                router.replace(
-                    `/user/profile${params.toString() ? "?" + params.toString() : ""}`
-                );
-            }, 7000); // Show for 10 seconds
-            return () => clearTimeout(timeout);
-        }
-    }, [showSuccess, router]);
-
-    if (!user) {
-        return <div>Loading...</div>;
+    if (result.status === "error") {
+        return <div>Error: {result.message}</div>;
     }
 
-    if (editing) {
+    if (result.status === "not_found") {
+        return <div>User not found</div>;
+    }
+
+    if (result.status === "success") {
+        const user = result.data;
         return (
-            <EditableProfileForm
-                user={user}
-                onCancel={() => setEditing(false)}
-            />
+            <UserProfile  {...user} />
         );
     }
 
-    return (
-        <div className="max-w-4xl mx-auto p-8 space-y-6 mt-12">
-            <h1 className="text-4xl font-extrabold text-gray-900">Your Profile</h1>
-
-            {showSuccess && (
-                <div className="mb-6 p-4 rounded-xl bg-green-100 border border-green-300 text-green-800 flex justify-between items-center">
-                    <span>
-                      {searchParams.get("success") === "agent-application"
-                        ? "Your application has been submitted! We'll review it and contact you soon."
-                        : "Profile updated successfully!"}
-                    </span>
-                    <button
-                        className="text-green-600 font-bold px-2"
-                        aria-label="Close"
-                        onClick={() => {
-                            setShowSuccess(false);
-                            const params = new URLSearchParams(window.location.search);
-                            params.delete("success");
-                            router.replace(
-                                `/user/profile${params.toString() ? "?" + params.toString() : ""}`
-                            );
-                        }}
-                    >
-                        ×
-                    </button>
-                </div>
-            )}
-
-            <div className="bg-white p-8 rounded-2xl shadow space-y-4">
-                {/* Role badge */}
-                <div>
-                  <span
-                    className={
-                      user.role === "USER"
-                        ? "inline-block mb-2 px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
-                        : user.role === "AGENT"
-                        ? "inline-block mb-2 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold"
-                        : user.role === "ADMIN"
-                        ? "inline-block mb-2 px-3 py-1 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold"
-                        : "inline-block mb-2 px-3 py-1 rounded bg-gray-100 text-gray-700 text-xs font-semibold"
-                    }
-                  >
-                    {user.role}
-                  </span>
-                </div>
-                <DisplayItem label="Name" value={user.name} />
-                <DisplayItem label="Email" value={user.email} />
-
-                {user.role === "AGENT" && user.agent && (
-                    <>
-                        <DisplayItem label="Full Name" value={user.agent.fullName} />
-                        <DisplayItem label="Phone" value={user.agent.phone} />
-                        <DisplayItem
-                            label="Date of Birth"
-                            value={new Date(user.agent.dateOfBirth).toLocaleDateString()}
-                        />
-                        {/* …add the other agent fields here as needed */}
-                    </>
-                )}
-            </div>
-
-            <Button onClick={() => setEditing(true)} className="text-white">
-                Edit Profile
-            </Button>
-
-            {/* Apply to Become an Agent section in a card (hide for admins, or if user has pending app) */}
-            {user.role !== "ADMIN" && (
-                <div className="bg-white p-8 rounded-2xl shadow space-y-4 mt-8">
-                    <h2 className="text-2xl font-semibold mb-2">
-                        Apply to Become an Agent
-                    </h2>
-                    {hasPendingApplication ? (
-                        <div className="text-yellow-700 bg-yellow-100 border border-yellow-300 rounded p-4">
-                            You have a pending agent application. Please wait for review.
-                        </div>
-                    ) : (
-                        <Button
-                            onClick={() => router.push("/user/agent/apply")}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                            Apply
-                        </Button>
-                    )}
-                </div>
-            )}
-        </div>
-    );
+    // Fallback (shouldn't reach here)
+    return <div>Loading...</div>;
 }
+
+

@@ -22,8 +22,10 @@ model User {
   agent            Agent?
   Authenticator    Authenticator[]
   sessions         Session[]
-  AgentApplication AgentApplication[]
+  AgentApplication AgentApplication?
+  comments         Comment[]
   Review           Review[]
+  stripeCustomerId String?           @unique
 }
 
 model Account {
@@ -81,7 +83,7 @@ model Agent {
   userId      String   @unique
   fullName    String
   phone       String
-  dateOfBirth DateTime
+  dateOfBirth String
   gender      Gender
   address     String
   locality    String // approved area of operation
@@ -108,15 +110,14 @@ enum ApplicationStatus {
 
 model AgentApplication {
   id                  String            @id @default(cuid())
-  userId              String
+  userId              String            @unique
   firstName           String
   lastName            String
-  phone               Int
-  dateOfBirth         DateTime
+  phone               String
+  dateOfBirth         String
   gender              Gender
   nationalIdNumber    String
-  proofOfIdentityUrl  String // e.g. uploaded ID file
-  proofOfIdentityType String // e.g. "pdf", "jpg"
+  proofOfIdentityType String? // e.g. "pdf", "jpg"
   address             String
   videoUrl            String
   desiredLocality     String // Where agent wants to operate
@@ -131,25 +132,32 @@ model AgentApplication {
   user User @relation(fields: [userId], references: [id])
 }
 
+enum PropertyStatus {
+  ACTIVE
+  DRAFT
+  EXPIRED
+}
+
 model Property {
-  id           String       @id @default(cuid())
-  title        String
-  slug         String       @unique
-  description  String
-  images       String[]
-  videos       String[]
-  propertyType PropertyType
-  bedrooms     Int
-  bathrooms    Int
-  area         Float
-  amenities    Amenity[]    @relation("PropertyAmenities")
-  tags         String[]
-  price        Float
-  furnished    Boolean      @default(false)
-  available    Boolean      @default(true)
-  isFeatured   Boolean      @default(false)
-  published    Boolean      @default(false)
-  views        Int          @default(0)
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  description     String
+  images          String[]
+  videos          String[]
+  propertyType    PropertyType
+  bedrooms        Int
+  bathrooms       Int
+  area            Float
+  tags            String[]
+  price           Float
+  status          PropertyStatus @default(DRAFT)
+  furnished       Boolean        @default(false)
+  available       Boolean        @default(true)
+  isFeatured      Boolean        @default(false)
+  published       Boolean        @default(false)
+  views           Int            @default(0)
+  listingDuration Int
 
   city      String
   state     String
@@ -157,9 +165,9 @@ model Property {
   address   String
   latitude  Float?
   longitude Float?
-
-  listedAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  comments  Comment[]
+  listedAt  DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   reviews Review[]
   agentId String
@@ -180,12 +188,6 @@ model Review {
   user   User   @relation(fields: [userId], references: [id])
 }
 
-model Amenity {
-  id         String     @id @default(cuid())
-  name       String     @unique
-  properties Property[] @relation("PropertyAmenities")
-}
-
 enum PropertyType {
   APARTMENT
   HOUSE
@@ -199,4 +201,19 @@ enum Role {
   USER
   AGENT
   ADMIN
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  userId     String
+  propertyId String
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
 }

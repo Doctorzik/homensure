@@ -1,7 +1,7 @@
 // File: middleware.ts
 
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
@@ -42,6 +42,7 @@ export const config = {
         '/user/agent/properties/:path*',
         '/system/:path*',
         '/user/profile/:path*',
-        '/user/agent/apply/:path*'
+        '/user/agent/apply/:path*',
+        '/user/application:path*'
     ]
 };

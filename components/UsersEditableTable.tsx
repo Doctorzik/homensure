@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import { useState } from "react";
 import DeleteUserButton from "./DeleteUserButton";
 
 type UserRow = {
@@ -16,8 +16,8 @@ export default function UsersEditableTable({ users, updateUser, deleteUser }: {
   updateUser: (formData: FormData) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
 }) {
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [editValues, setEditValues] = React.useState<Record<string, { name: string; email: string; role: string }>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, { name: string; email: string; role: string }>>({});
 
   const handleEdit = (user: UserRow) => {
     setEditingId(user.id);
@@ -78,10 +78,10 @@ export default function UsersEditableTable({ users, updateUser, deleteUser }: {
                     user.role === "USER"
                       ? "inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
                       : user.role === "AGENT"
-                      ? "inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold"
-                      : user.role === "ADMIN"
-                      ? "inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold"
-                      : "inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-semibold"
+                        ? "inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold"
+                        : user.role === "ADMIN"
+                          ? "inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold"
+                          : "inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-semibold"
                   }
                 >
                   {user.role}

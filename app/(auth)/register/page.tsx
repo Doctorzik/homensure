@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createUser } from '@/lib/actions/auth-action';
 
 export default function RegisterPage() {
 
@@ -15,12 +16,14 @@ export default function RegisterPage() {
 		confirmPassword: '',
 	});
 	const [error, setError] = useState('');
+	const [summiting, setSubmitting] = useState(false)
+
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setForm({ ...form, [e.target.name]: e.target.value });
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent,) => {
 		e.preventDefault();
 		setError('');
 		if (form.password !== form.confirmPassword) {
@@ -28,26 +31,44 @@ export default function RegisterPage() {
 			return;
 		}
 
-		// Call the API route instead of createUser directly
-		const response = await fetch('/api/register', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				name: form.name,
-				email: form.email,
-				password: form.password,
-			}),
-		});
 
-		const data = await response.json();
+		const name = form.name
+		const email = form.email
+		const password = form.password
 
-		if (!response.ok) {
-			setError(data.error || "Registration failed.");
-			return;
+		const fore = new FormData()
+		fore.append("name", name)
+		fore.append("email", email)
+		fore.append("password", password)
+
+
+		// // Call the API route instead of createUser directly
+		// const response = await fetch('/api/register', {
+		// 	method: 'POST',
+		// 	headers: { 'Content-Type': 'application/json' },
+		// 	body: JSON.stringify({
+		// 		name: form.name,
+		// 		email: form.email,
+		// 		password: form.password,
+		// 	}),
+		// });
+		setSubmitting(true)
+		const result = await createUser(fore)
+		if (result) {
+			setSubmitting(false)
+			router.push('/login');
 		}
 
-		// On success, redirect to login
-		router.push('/login');
+		else {
+			setSubmitting(false)
+			setError("Something happend during registration")
+		}
+
+
+
+
+
+
 	};
 
 	return (
@@ -117,7 +138,7 @@ export default function RegisterPage() {
 						/>
 					</div>
 
-					<button
+					<button disabled={summiting}
 						type="submit"
 						className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl shadow-sm transition duration-300"
 					>
