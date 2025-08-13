@@ -11,7 +11,7 @@ export async function Post(req: Request) {
 
 	// get the headerslist fron the headers
 	const headerList = await headers();
-	console.log(headerList);
+
 
 	// get the stripe signature from the headers
 
