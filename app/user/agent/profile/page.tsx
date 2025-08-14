@@ -11,7 +11,6 @@ import AgentProfileEdit from "@/components/molecules/AgentProfile";
 
 
 export default async function AgentProfilePage() {
-    // 1) Ensure signed in
     const session = await auth();
     if (!session) {
         redirect("/login");

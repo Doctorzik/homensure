@@ -1,13 +1,11 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "./lib/auth";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
 	const { pathname } = req.nextUrl;
 
-	console.log(pathname);
-	const token =
-		req.cookies.get("next-auth.session-token") ||
-		req.cookies.get("__Secure-next-auth.session-token");
+	const token = await auth();
 
 	if (!token && pathname !== "/login") {
 		return NextResponse.redirect(new URL("/login", req.url));
@@ -15,7 +13,6 @@ export function middleware(req: NextRequest) {
 
 	return NextResponse.next();
 }
-
 
 export const config = {
 	matcher: [
