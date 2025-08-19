@@ -39,7 +39,7 @@ export const propertyListingDurationPrice: iAppProps[] = [
 	{
 		days: 30,
 		name: "Standard Listing",
-		price: 1000.99,
+		price: 1000,
 		currency: "USD",
 		description: "Visible in property search for 30 days",
 		features: ["Listed in local search", "Expires after 30 days"],

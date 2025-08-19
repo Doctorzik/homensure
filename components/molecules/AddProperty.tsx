@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 
 
-import { createProperty } from "@/lib/actions/agent-actions";
+import { createProperty, initializePaystack } from "@/lib/actions/agent-actions";
 import { useForm } from "react-hook-form"
 import z from "zod";
 import { Property, propertySchema } from "@/lib/schemas/userSchema";
@@ -13,6 +13,9 @@ import Input from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+
+import { useEffect, useState } from "react";
+
 
 
 
@@ -58,13 +61,7 @@ export function AddPropertyPage() {
 
   const session = useSession()
 
-
-
-
- 
-
-
-
+  const [url, setUrl] = useState('')
   const fom = useForm<z.infer<typeof propertySchema>>({
     defaultValues: {
       address: "",
@@ -93,7 +90,13 @@ export function AddPropertyPage() {
   const selectedState = fom.watch("state");
   const slugs = fom.getValues("title")
 
+  useEffect(() => {
 
+    if (url) {
+      window.location.href = url
+    }
+
+  }, [url])
 
 
   async function handleSubmit(data: Property) {
@@ -102,13 +105,24 @@ export function AddPropertyPage() {
     const validate = propertySchema.parse(real)
 
 
-     await createProperty(validate, session.data?.user.email as string)
-     
-    
+    const result = await createProperty(validate, session.data?.user.email as string)
+    if (result.status === "success") {
+        
+      const response = await initializePaystack(result.data?.email as string, result.data?.price as string, result.data?.id as string)
+      if (response.status) {
+
+        setUrl(response.data.authorization_url)
+        return
+      }
+    }
+
+
   }
 
   return (
     <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow mt-8">
+
+
       <h1 className="text-2xl font-bold mb-6">Add New Property</h1>
       <form onSubmit={fom.handleSubmit(handleSubmit)} className="space-y-4">
         <div>
@@ -283,8 +297,11 @@ export function AddPropertyPage() {
           >
             Cancel
           </button>
+
         </div>
       </form>
+
+
     </div>
   );
 }

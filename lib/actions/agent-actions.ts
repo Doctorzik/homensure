@@ -11,7 +11,7 @@ import { getUser } from "./auth-action";
 
 import { redirect } from "next/navigation";
 import { isAgent } from "./admin-actions";
-import { stripe } from "../stripe";
+
 import { propertyListingDurationPrice } from "@/app/utils/constant";
 
 export async function createAgentApplication(
@@ -85,6 +85,7 @@ export async function createProperty(
 		);
 
 	const isThisAnagent = await isAgent(agentEmail);
+
 	if (!isThisAnagent)
 		throw new Error("Only agents are allowed to create a property listing");
 
@@ -106,19 +107,20 @@ export async function createProperty(
 			},
 		},
 	});
+
 	if (!agentInfo) redirect("/");
-	let agentStripeId = agentInfo.stripeCustomerId;
-	if (!agentStripeId) {
-		const customer = await stripe.customers.create({
-			name: agentInfo.agent?.user.name as string,
-			email: agentInfo.email,
-		});
-		agentStripeId = customer.id;
-		await prisma.user.update({
-			where: { id: agentInfo.id },
-			data: { stripeCustomerId: agentStripeId },
-		});
-	}
+	// let agentStripeId = agentInfo.stripeCustomerId;
+	// if (!agentStripeId) {
+	// 	const customer = await stripe.customers.create({
+	// 		name: agentInfo.agent?.user.name as string,
+	// 		email: agentInfo.email,
+	// 	});
+	// 	agentStripeId = customer.id;
+	// 	await prisma.user.update({
+	// 		where: { id: agentInfo.id },
+	// 		data: { stripeCustomerId: agentStripeId },
+	// 	});
+	// }
 
 	const property = await prisma.property.create({
 		data: {
@@ -126,7 +128,18 @@ export async function createProperty(
 			listingDuration: validated.listingDuration,
 			agentId: agentInfo.agent?.id as string,
 		},
-		select: { id: true },
+		select: {
+			id: true,
+			agent: {
+				select: {
+					user: {
+						select: {
+							email: true,
+						},
+					},
+				},
+			},
+		},
 	});
 
 	const pricingTier = propertyListingDurationPrice.find(
@@ -134,34 +147,51 @@ export async function createProperty(
 	);
 	if (!pricingTier) throw new Error("Invalid Pricing Tier");
 
-	const stripeSession = await stripe.checkout.sessions.create({
-		customer: agentStripeId,
-		line_items: [
-			{
-				price_data: {
-					product_data: {
-						name: `Property Listing for ${pricingTier.days} days`,
-						description: pricingTier.description,
-						images: ["https://picsum.photos/200"],
-					},
-					unit_amount: pricingTier.price * 100,
-					currency: "NGN",
-				},
-				quantity: 1,
-			},
-		],
-		metadata: {
-			propertyId: property.id,
+	// const stripeSession = await stripe.checkout.sessions.create({
+	// 	customer: agentStripeId,
+	// 	line_items: [
+	// 		{
+	// 			price_data: {
+	// 				product_data: {
+	// 					name: `Property Listing for ${pricingTier.days} days`,
+	// 					description: pricingTier.description,
+	// 					images: ["https://picsum.photos/200"],
+	// 				},
+	// 				unit_amount: pricingTier.price * 100,
+	// 				currency: "NGN",
+	// 			},
+	// 			quantity: 1,
+	// 		},
+	// 	],
+	// 	metadata: {
+	// 		propertyId: property.id,
+	// 	},
+	// 	success_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/success`,
+	// 	cancel_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/cancel`,
+	// 	mode: "payment",
+	// });
+
+	// if (!stripeSession.url)
+	// 	throw new Error("Stripe session could not be created");
+
+	// redirect(stripeSession.url);
+
+	if (!property.id) {
+		return {
+			status: "error",
+			message: "failed to create property",
+		};
+	}
+
+	return {
+		status: "success",
+		message: "Successfully add property",
+		data: {
+			id: property.id,
+			price: String(pricingTier.price),
+			email: property.agent.user.email,
 		},
-		success_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/success`,
-		cancel_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/cancel`,
-		mode: "payment",
-	});
-
-	if (!stripeSession.url)
-		throw new Error("Stripe session could not be created");
-
-	redirect(stripeSession.url);
+	};
 }
 
 export async function editProperty(data: z.infer<typeof propertySchema>) {
@@ -301,8 +331,51 @@ export async function getAllProperties() {
 		});
 
 		return properties;
-	} catch  {
-		console.error("Error fetching properties:",);
+	} catch {
+		console.error("Error fetching properties:");
 		throw new Error("Failed to fetch properties");
 	}
 }
+
+export const initializePaystack = async (
+	email: string,
+	amount: string, // change type to number
+	propertyId: string
+) => {
+	// Convert amount to kobo (smallest unit)
+
+	const response = await fetch(
+		"https://api.paystack.co/transaction/initialize",
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${process.env.PAY_STACK_SECRET}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				email,
+				amount: amount,
+				reference: propertyId,
+				callback_url: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/success`,
+				metadata: {
+					propertyId,
+					cancel_action: `${process.env.NEXT_PUBLIC_URL}/user/agent/payment/cancel`,
+				},
+			}),
+		}
+	);
+
+	const contentType = response.headers.get("content-type") || "";
+	if (!contentType.includes("application/json")) {
+		throw new Error("Paystack response not JSON");
+	}
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		console.error("Paystack API error:", data);
+		throw new Error(data.message || "Paystack API error");
+	}
+
+	return data;
+};
