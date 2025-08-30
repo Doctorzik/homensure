@@ -15,33 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 import { useEffect, useState } from "react";
+import { countryStateCity } from "@/app/utils/constant";
 
 
 
 
-// Example data for countries, states, and cities
-type CountryStateCityType = {
-  [country: string]: {
-    [state: string]: string[];
-  };
-};
-const countryStateCity: CountryStateCityType = {
-  USA: {
-    California: ["Los Angeles", "San Francisco", "San Diego"],
-    Texas: ["Houston", "Dallas", "Austin"],
-    NewYork: ["New York City", "Buffalo", "Rochester"],
-  },
-  Canada: {
-    Ontario: ["Toronto", "Ottawa", "Hamilton"],
-    Quebec: ["Montreal", "Quebec City", "Laval"],
-    Alberta: ["Calgary", "Edmonton", "Red Deer"],
-  },
-  Mexico: {
-    Jalisco: ["Guadalajara", "Zapopan", "Tlaquepaque"],
-    CDMX: ["Mexico City"],
-    NuevoLeon: ["Monterrey", "San Nicolas"],
-  },
-};
+
+
 
 
 const propertyTypes = [

@@ -37,6 +37,7 @@ export function AgentApplicationForm() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(agentApplicationSchema),
+    
   });
 
 
@@ -93,7 +94,11 @@ export function AgentApplicationForm() {
         <Input label="Date of Birth" id="dateOfBirth" type="date"  {...register("dateOfBirth")} />
         {errors.dateOfBirth && <p className="text-red-500 text-sm">{errors.dateOfBirth.message}</p>}
       </div>
-
+      <div>
+  {/* Country */}
+        <Input label="country" id="country"   {...register("country")} />
+        {errors.country && <p className="text-red-500 text-sm">{errors.country.message}</p>}
+      </div>
       {/* Gender */}
       <div>
         <Label htmlFor="gender">Gender</Label>

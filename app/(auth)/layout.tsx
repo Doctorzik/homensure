@@ -9,7 +9,7 @@ export default function AuthLayout({
   return (
     <html lang="en">
       <body>
-
+  
         <main>{children}</main>
       </body>
     </html>

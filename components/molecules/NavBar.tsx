@@ -70,7 +70,7 @@ export function NavBar() {
     }
 
     return (
-        <nav className="w-full flex flex-col md:flex-row justify-between border-2 p-4">
+        <nav className=" flex flex-row flex-wrap md:flex-row justify-between border-2 p-4">
             <Link href={appUrls.landingPage} className="flex items-center">
                 <Image
                     src="https://picsum.photos/200"
@@ -94,7 +94,7 @@ export function NavBar() {
                 ))}
             </ul>
 
-            <div>
+            <div className="flex  sm:flex-col flex-wrap">
                 {session?.user ? (
                     <div className="flex items-center gap-4">
                         {showDashboard && (

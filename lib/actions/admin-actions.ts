@@ -93,6 +93,7 @@ export async function approveAgent(agentApplicationId: string) {
 			id: application.id,
 			nationalId: application.nationalIdNumber,
 			userId: application.userId,
+			country : application.desiredLocality
 		},
 		select: {
 			user: {

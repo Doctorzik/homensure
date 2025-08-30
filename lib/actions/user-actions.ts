@@ -3,7 +3,11 @@
 import { auth } from "../auth";
 import { prisma } from "../db/prisma";
 import { AgentWithUser, NormalUser } from "@/app/utils/constant";
-import { userSchema } from "../schemas/userSchema";
+import {
+	
+	AgentProfileSchema,
+
+} from "../schemas/userSchema";
 import z from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -63,12 +67,16 @@ export async function getUser(): Promise<UserResult> {
 			where: {
 				id: session.user.id,
 			},
+			include: {
+				agent: true,
+			},
+
 			omit: {
 				password: true,
 				stripeCustomerId: true,
 			},
 		});
-
+	
 		if (!user) return { status: "not_found" };
 		else {
 			return {
@@ -76,9 +84,7 @@ export async function getUser(): Promise<UserResult> {
 				data: user,
 			};
 		}
-
-	} catch  {
-		
+	} catch {
 		return {
 			status: "error",
 			message: "Something went wrong",
@@ -86,20 +92,34 @@ export async function getUser(): Promise<UserResult> {
 	}
 }
 
-export async function UpdateUserAgent(data: z.infer<typeof userSchema>) {
+export async function UpdateUserAgent(
+	data: z.infer<typeof AgentProfileSchema>
+) {
 	try {
 		const session = await auth();
 
 		if (!session) return { status: "no_session" };
 		if (session.user.role !== "AGENT") return { status: "unauthorized" };
-		const validatedData = userSchema.parse(data);
+		const validatedData = AgentProfileSchema.parse(data);
 		if (!validatedData) return { status: "Error Validation" };
-		const agent = await prisma.agent.update({
+		const agent = await prisma.user.update({
 			where: { id: session.user.id },
 			data: {
-				user: {
+				about: validatedData.about,
+				name: validatedData.firstName,
+				email: validatedData.email,
+				agent: {
 					update: {
-						...validatedData,
+						address: validatedData.address,
+						country: validatedData.country,
+						dateOfBirth: validatedData.dateOfBirth,
+						fullName: validatedData.firstName.concat(
+							" ",
+							validatedData.lastName
+						),
+						locality: validatedData.locality,
+						phone: validatedData.phone,
+						nationalId: validatedData.nationalIdNumber,
 					},
 				},
 			},
@@ -107,7 +127,7 @@ export async function UpdateUserAgent(data: z.infer<typeof userSchema>) {
 
 		if (!agent) return { status: "not_found" };
 
-		revalidatePath("/");
+		revalidatePath("");
 	} catch (error: unknown) {
 		console.error(error);
 		return {

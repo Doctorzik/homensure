@@ -28,7 +28,7 @@ export default async function AgentProfilePage() {
     if (result.status === "success")
            
         return (
-            <AgentProfileEdit {...result.data} />
+            <AgentProfileEdit status={"PENDING"} userId={""} phone={""} dateOfBirth={result.data.dateOfBirth} gender={result.data.gender} address={result.data.address} firstName={result.data.user.name ?? ""} lastName={result.data.user.name ?? ""} nationalIdNumber={result.data.nationalId ?? ""} videoUrl={result.data.idUrl ?? ""} desiredLocality={""} experience={null} motivation={result.data.idType ?? ""} pastRoles={null} interviewDate={null} reviewerNote={null} proofOfIdentityType={null} appliedAt={result.data.joinedAt} fullName={result.data.fullName} locality={""} nationalId={result.data.nationalId} idType={null} idUrl={null} joinedAt={result.data.user.updatedAt} country={result.data.country} {...result.data.user}   />
 
         )
   

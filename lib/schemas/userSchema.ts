@@ -8,6 +8,7 @@ export const propertyTypeEnum = z.enum([
 	"COMMERCIAL",
 	"LAND",
 ]);
+
 export type PropertyType = z.infer<typeof propertyTypeEnum>;
 
 export const amenitySchema = z.object({
@@ -66,8 +67,38 @@ export const agentApplicationSchema = z.object({
 	pastRoles: z.string().optional(),
 	interviewDate: z.string().optional(), // Usually set by admin later
 	reviewerNote: z.string().optional(),
+	country: z.string("Country is required"),
+	about: z.string().optional(),
+
+	image: z.url().optional,
 });
 
+export const AgentProfileSchema = z.object({
+	email: z.email("Invalid email address"),
+	firstName: z.string().min(1, "First name is required"),
+	lastName: z.string().min(1, "Last name is required"),
+	imageUrl: z.string().url("Invalid image URL").optional(),
+	about: z
+		.string()
+		.max(50, "About section must not exceed 50 characters") // ✅ You wrote 50 instead of 500
+		.optional(),
+	phone: z
+		.string()
+		.regex(/^[0-9+\-\s()]*$/, "Invalid phone number")
+		.min(7, "Phone number must be at least 8 digits"),
+	dateOfBirth: z.string().refine((val) => !isNaN(Date.parse(val)), {
+		message: "Invalid date format",
+	}),
+	address: z.string().min(1, "Address is required"),
+	locality: z.string().min(1, "Locality is required"),
+	nationalIdNumber: z.string().min(3, "National ID number is required"),
+	idType: z.string().optional(),
+	country: z.string().min(2, "Country is required"),
+});
+
+export const CombineUserAgentSchema = userSchema.extend(
+	agentApplicationSchema.shape
+);
 export const propertySchema = z.object({
 	id: z.cuid().optional(),
 	title: z.string().min(3, "Title is required"),
@@ -118,6 +149,7 @@ export const propertySchema = z.object({
 });
 
 export type Property = z.infer<typeof propertySchema>;
+export type AgentUserAppication = z.infer<typeof AgentProfileSchema>;
 export const searchSchema = z.object({
 	city: z.string().optional(),
 	state: z.string().optional(),

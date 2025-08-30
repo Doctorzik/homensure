@@ -7,9 +7,9 @@ interface iAppProps {
 
 export function ProfileField({ label, value }: iAppProps) {
   return (
-    <div>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-base font-medium">{value || "N/A"}</p>
+    <div className="flex justify-between items-baseline">
+      <p className="">{label}</p>
+      <p className="text-base font-medium px-3">{value}</p>
     </div>
   );
 }

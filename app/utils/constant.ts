@@ -1,9 +1,17 @@
-import { User as PrismaUser, Agent as PrismaAgent } from "@prisma/client";
+import {
+	User as PrismaUser,
+	Agent as PrismaAgent,
+	AgentApplication,
+	
+} from "@prisma/client";
 
-export type User = PrismaUser;
+export type User = Omit<PrismaUser, "password" | "stripeCustomerId">;
 
 export type NormalUser = Omit<PrismaUser, "password" | "stripeCustomerId">;
 
+
+
+export type UserWithApplication = User & AgentApplication & PrismaAgent;
 export interface AgentWithUser extends PrismaAgent {
 	user: Omit<User, "password" | "stripeCustomerId">;
 }
@@ -91,3 +99,86 @@ export const amenities = [
 ];
 
 export default amenities;
+// Example data for countries, states, and cities
+type CountryStateCityType = {
+	[country: string]: {
+		[state: string]: string[];
+	};
+};
+
+export const countryStateCity: CountryStateCityType = {
+	Nigeria: {
+		Abia: ["Umuahia", "Aba"],
+		Adamawa: ["Yola", "Mubi"],
+		AkwaIbom: ["Uyo", "Eket"],
+		Anambra: ["Awka", "Onitsha", "Nnewi"],
+		Bauchi: ["Bauchi", "Azare"],
+		Bayelsa: ["Yenagoa", "Ogbia"],
+		Benue: ["Makurdi", "Gboko"],
+		Borno: ["Maiduguri", "Biu"],
+		CrossRiver: ["Calabar", "Ikom"],
+		Delta: ["Asaba", "Warri", "Ughelli"],
+		Ebonyi: ["Abakaliki", "Afikpo"],
+		Edo: ["Benin City", "Ekpoma"],
+		Ekiti: ["Ado-Ekiti", "Ikere-Ekiti"],
+		Enugu: ["Enugu", "Nsukka"],
+		Gombe: ["Gombe", "Kaltungo"],
+		Imo: ["Owerri", "Orlu"],
+		Jigawa: ["Dutse", "Hadejia"],
+		Kaduna: ["Kaduna", "Zaria", "Kafanchan"],
+		Kano: ["Kano", "Wudil"],
+		Katsina: ["Katsina", "Daura"],
+		Kebbi: ["Birnin Kebbi", "Argungu"],
+		Kogi: ["Lokoja", "Okene"],
+		Kwara: ["Ilorin", "Offa"],
+		Lagos: ["Lagos", "Ikeja", "Badagry", "Epe"],
+		Nassarawa: ["Lafia", "Keffi"],
+		Niger: ["Minna", "Suleja"],
+		Ogun: ["Abeokuta", "Ijebu Ode", "Sagamu"],
+		Ondo: ["Akure", "Ondo Town", "Owo"],
+		Osun: ["Osogbo", "Ile-Ife", "Ilesa"],
+		Oyo: ["Ibadan", "Ogbomoso", "Oyo Town"],
+		Plateau: ["Jos", "Pankshin"],
+		Rivers: ["Port Harcourt", "Bonny", "Omoku"],
+		Sokoto: ["Sokoto", "Tambuwal"],
+		Taraba: ["Jalingo", "Wukari"],
+		Yobe: ["Damaturu", "Potiskum"],
+		Zamfara: ["Gusau", "Kaura Namoda"],
+		FCT: ["Abuja", "Gwagwalada", "Bwari", "Kuje"],
+	},
+	Ghana: {
+		Ahafo: ["Goaso", "Hwidiem"],
+		Ashanti: ["Kumasi", "Obuasi", "Ejisu"],
+		Bono: ["Sunyani", "Berekum"],
+		BonoEast: ["Techiman", "Kintampo"],
+		Central: ["Cape Coast", "Winneba", "Elmina"],
+		Eastern: ["Koforidua", "Nkawkaw", "Suhum"],
+		GreaterAccra: ["Accra", "Tema", "Madina", "Teshie"],
+		NorthEast: ["Nalerigu", "Gambaga"],
+		Northern: ["Tamale", "Yendi", "Salaga"],
+		Oti: ["Dambai", "Nkwanta"],
+		Savannah: ["Damongo", "Bole"],
+		UpperEast: ["Bolgatanga", "Navrongo"],
+		UpperWest: ["Wa", "Lawra"],
+		Volta: ["Ho", "Kpando", "Hohoe"],
+		Western: ["Sekondi-Takoradi", "Tarkwa", "Axim"],
+		WesternNorth: ["Sefwi Wiawso", "Bibiani"],
+	},
+	Liberia: {
+		Bomi: ["Tubmanburg", "Klay"],
+		Bong: ["Gbarnga", "Salala", "Totota"],
+		Gbarpolu: ["Bopolu", "Belefani"],
+		GrandBassa: ["Buchanan", "Edina"],
+		GrandCapeMount: ["Robertsport", "Madina"],
+		GrandGedeh: ["Zwedru", "Tuzon"],
+		GrandKru: ["Barclayville", "Sasstown"],
+		Lofa: ["Voinjama", "Zorzor", "Foya"],
+		Margibi: ["Kakata", "Harbel"],
+		Maryland: ["Harper", "Pleebo"],
+		Montserrado: ["Monrovia", "Paynesville", "Barnersville"],
+		Nimba: ["Ganta", "Sanniquellie", "Yekepa"],
+		RiverCess: ["Cestos City"],
+		RiverGee: ["Fish Town"],
+		Sinoe: ["Greenville", "Karnweaken"],
+	},
+};
