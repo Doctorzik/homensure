@@ -10,20 +10,76 @@ import Input from "../ui/input";
 import { UpdateUserAgent } from "@/lib/actions/user-actions";
 import { Card } from "../ui/card";
 import Link from "next/link";
-import { ProfileImageAvatar } from "./ProfileImageAvater";
 import z from "zod";
 import { AgentProfileSchema, AgentUserAppication } from "@/lib/schemas/userSchema";
 
-import { Edit2Icon } from "lucide-react";
+import { Edit2Icon, Edit3Icon } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { superbase } from "@/superbase/superbase";
+import { useState } from "react";
+
+
+import { updateProfileImage } from "@/lib/actions/agent-actions";
+
 
 
 
 export default function AgentProfileEdit(user: UserWithApplication) {
- 
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState("")
+  const [open, setOpen] = useState(false)
 
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
+      setFile(file)
+    }
+  }
+
+
+
+  const handleUpload = async () => {
+
+    if (!file) return
+    try {
+      setUploading(true);
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `agents/${fileName}`;
+      await superbase.storage.from("profileImage").upload(filePath, file, {
+        upsert: true
+      });
+
+      if (user.image) {
+        const imageUrl = user.image?.split("profileImage/")[1].toString()
+        await superbase.storage.from("profileImage").remove([imageUrl])
+      }
+
+      // get public URL
+      const { data } = superbase.storage
+        .from("profileImage")
+        .getPublicUrl(filePath);
+      await updateProfileImage(data.publicUrl, user.id)
+
+
+
+    } catch (error) {
+      console.error(error);
+
+    } finally {
+      setPreview("")
+      setUploading(false);
+      setOpen(false)
+    }
+  };
 
   return (
 
@@ -33,7 +89,7 @@ export default function AgentProfileEdit(user: UserWithApplication) {
           <h2 className=" lg:text-2xl font-bold mb-4">Welcome <span className="whitespace-nowrap">{user.name ? user.name : user.fullName.split(" ")[0]}</span>
 
           </h2>
-      
+
 
         </div>
 
@@ -44,8 +100,73 @@ export default function AgentProfileEdit(user: UserWithApplication) {
         </div>
       </div>
 
-      <div className=" m-auto md:m-0">
-        <ProfileImageAvatar width="w-30 h-30" alt={`${user.fullName}- Image`} text={user.fullName?.charAt(0)} imageSrc={"https://picsum.photos/200"} />
+      <div className=" m-auto md:m-0  relative">
+
+        <Avatar className="rounded-lg size-30">
+          <AvatarImage src={user.image as string} />
+          <AvatarFallback>{user.fullName?.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <Dialog open={open} onOpenChange={() => setOpen(true)} >
+          <DialogTrigger asChild>
+            <Button className="top-25 lg:top-30 sm:left-10 absolute  text-amber-50 text-[10px] ">
+              <Edit3Icon />
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+          
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              handleUpload()
+            }}>
+              <DialogHeader>
+                <DialogTitle>Edit profile Image</DialogTitle>
+               
+              </DialogHeader>
+              <input type="file" size={4} onChange={handleImageChange} />
+
+              {
+                preview && <Avatar className="rounded-lg size-30">
+                  <AvatarImage src={preview} />
+                  <AvatarFallback>{user.fullName?.charAt(0)}</AvatarFallback>
+                </Avatar>
+              }
+
+              <DialogFooter className="bg-red-200 flex  md:justify-center items-center ">
+                <DialogClose asChild>
+                  <Button disabled={uploading} type="reset" variant="outline" onClick={() => setPreview("")}>Cancel</Button>
+                </DialogClose>
+                {uploading && (
+                  <div className="flex justify-center items-center mt-4">
+                    <svg
+                      className="animate-spin h-6 w-6 text-blue-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      />
+                    </svg>
+                    <span className="ml-2 text-sm text-gray-600">Uploading...</span>
+                  </div>
+                )}
+                <Button disabled={uploading} type="submit" variant="secondary">Save changes</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+
+        </Dialog>
+
       </div>
 
       <div className="text-right">

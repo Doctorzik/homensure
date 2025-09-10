@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { isAgent } from "./admin-actions";
 
 import { propertyListingDurationPrice } from "@/app/utils/constant";
+import { revalidatePath } from "next/cache";
 
 export async function createAgentApplication(
 	data: z.infer<typeof agentApplicationSchema>
@@ -378,4 +379,23 @@ export const initializePaystack = async (
 	}
 
 	return data;
+};
+
+export const updateProfileImage = async (url: string, id: string) => {
+	const count = await prisma.user.update({
+		where: {
+			id: id,
+		},
+		data: {
+			image: url,
+		},
+		select: {
+			_count: true,
+		},
+	});
+
+	if (!count) {
+		return false;
+	}
+  revalidatePath("/user/agent/profile"); 
 };

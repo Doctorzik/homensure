@@ -23,7 +23,7 @@ export default async function UserProfilePage() {
 
     if (result.status === "success") {
         const user = result.data;
-        console.log(user)
+       
         return (
             <UserProfile  {...user} />
         );
